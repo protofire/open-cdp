@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 const Layout = styled.div`
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 
@@ -15,11 +16,9 @@ class App extends Component {
     return (
       <Layout>
         <header className="App-header">
-          <h1 className="App-title">Welcome to React</h1>
+          <h1 className="App-title">Welcome!</h1>
         </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
+        <p className="App-intro">OpenCDP</p>
       </Layout>
     );
   }
