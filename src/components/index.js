@@ -163,7 +163,7 @@ export const Address = styled.span`
   color: ${({ theme }) => theme.color.text};
 `;
 
-export const Help = styled.i`
+export const HelpIcon = styled.i`
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -179,6 +179,22 @@ export const Help = styled.i`
   font-weight: 600;
 `;
 
+// const HelpBubble = styled.div`
+//   position: absolute;
+//   top: -2rem;
+// `;
+//
+// export const HelpPopup = props => (
+//   <HelpBubble>
+//     <HelpText>
+//       {props.textLines.map(textline => <p>{textline}</p>)}
+//     </HelpText>
+//     <HelpTrail>
+//
+//     </HelpTrail>
+//   </HelpBubble>
+// );
+
 export const Block = styled.div`
   display: flex;
   justify-content: space-around;
@@ -192,7 +208,7 @@ export const Block = styled.div`
       display: flex;
       justify-content: flex-start;
 
-      ${Help} {
+      ${HelpIcon} {
         margin-left: 0.5rem;
       }
     }
@@ -348,7 +364,7 @@ export const Modal = styled.div`
   background-color: ${({ theme }) => theme.color.modalBg};
 `;
 
-const Dialog = styled.div`
+export const Dialog = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -397,67 +413,13 @@ const DialogButton = styled(Button)`
   padding: 0.4rem 0.9rem;
 `;
 
-const AcceptDialogButton = styled(DialogButton)`
+export const AcceptDialogButton = styled(DialogButton)`
   background-color: ${({ theme }) => theme.color.secondary};
 `;
 
-const CancelDialogButton = styled(DialogButton)`
+export const CancelDialogButton = styled(DialogButton)`
   background-color: ${({ theme }) => theme.color.softGray};
 `;
-
-export const ConfirmTx = props => {
-  const {
-    data: { eth, dai, toggleDialog, confirmTx }
-  } = props;
-
-  return (
-    <Modal>
-      <Dialog>
-        <h3>Confirm CDP creation?</h3>
-        <p>
-          You are going to lock up <span>{eth} ETH</span> and receive <span>{dai} DAI</span>.
-        </p>
-        <p>Are you sure you want to proceed with this transaction?</p>
-        <div className="buttons">
-          <CancelDialogButton onClick={() => toggleDialog()}>Cancel</CancelDialogButton>
-          <AcceptDialogButton onClick={() => confirmTx()}>Accept</AcceptDialogButton>
-        </div>
-      </Dialog>
-    </Modal>
-  );
-};
-
-export const Waiting = () => (
-  <Modal>
-    <Dialog>
-      <h3>Waiting...</h3>
-      <p>Please accept pending transaction on your wallet.</p>
-      <img src="/images/waiting-coin.svg" alt="Waiting" />
-    </Dialog>
-  </Modal>
-);
-
-export const Mining = () => (
-  <Modal>
-    <Dialog>
-      <h3>Creating CDP!</h3>
-      <p>Your CDP creation transaction is in progress on the blockchain.</p>
-      <p>Please be patient till it finishes, shouldn't take too long.</p>
-      <img src="/images/working-gears.svg" alt="Mining" />
-    </Dialog>
-  </Modal>
-);
-
-export const Loading = () => (
-  <Modal>
-    <Dialog>
-      <h3>Loading...</h3>
-      <p>Your new CDP has been created!</p>
-      <p>Now please wait while new data is being loaded.</p>
-      <img src="/images/loading-coffee.svg" alt="Loading" />
-    </Dialog>
-  </Modal>
-);
 
 export const Slider = styled.input.attrs({
   type: "range"

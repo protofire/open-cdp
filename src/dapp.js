@@ -12,16 +12,16 @@ import {
   Github,
   Section,
   Block,
-  Help,
+  HelpIcon,
   Button,
   Slider,
   Address,
   ToggleOptions,
   WizardNumberInput,
-  ConfirmTx,
-  Waiting,
-  Mining,
-  Loading
+  Modal,
+  Dialog,
+  CancelDialogButton,
+  AcceptDialogButton
 } from "./components";
 
 class Dapp extends Component {
@@ -107,7 +107,7 @@ class Dapp extends Component {
     liquidationPrice: "",
     // flags
     loadingData: false,
-    showAdvanced: true,
+    showAdvanced: false,
     showDialogTx: false,
     showWaitingAction: false,
     showMiningNotice: false
@@ -160,9 +160,9 @@ class Dapp extends Component {
   confirmTx = () => {
     this.toggleDialog();
     this.setState({ showWaitingAction: true });
-    setTimeout(() => this.setState({ showWaitingAction: false, showMiningNotice: true }), 6000);
-    setTimeout(() => this.setState({ showMiningNotice: false, loadingData: true }), 15000);
-    setTimeout(() => this.setState({ loadingData: false }), 25000);
+    setTimeout(() => this.setState({ showWaitingAction: false, showMiningNotice: true }), 8000);
+    setTimeout(() => this.setState({ showMiningNotice: false, loadingData: true }), 18000);
+    setTimeout(() => this.setState({ loadingData: false }), 28000);
   };
 
   render() {
@@ -218,7 +218,7 @@ class Dapp extends Component {
                 <label htmlFor="eth">
                   <div>
                     <span>ETH to lock up</span>
-                    <Help>?</Help>
+                    <HelpIcon>?</HelpIcon>
                   </div>
                   <div>
                     <WizardNumberInput
@@ -239,7 +239,7 @@ class Dapp extends Component {
                 <label htmlFor="dai">
                   <div>
                     <span>DAI to get</span>
-                    <Help>?</Help>
+                    <HelpIcon>?</HelpIcon>
                   </div>
                   <div>
                     <WizardNumberInput
@@ -260,7 +260,7 @@ class Dapp extends Component {
                     <label htmlFor="safety">
                       <div>
                         <span>Safety</span>
-                        <Help>?</Help>
+                        <HelpIcon>?</HelpIcon>
                         <span className="safety-percent">
                           {safety}
                           <i>%</i>
@@ -285,7 +285,7 @@ class Dapp extends Component {
                     <label htmlFor="leverage">
                       <div>
                         <span>Leverage</span>
-                        <Help>?</Help>
+                        <HelpIcon>?</HelpIcon>
                       </div>
                       <div>
                         <WizardNumberInput
@@ -358,19 +358,54 @@ class Dapp extends Component {
           </Footer>
 
           {showDialogTx && (
-            <ConfirmTx
-              data={{
-                eth,
-                dai,
-                confirmTx: () => this.confirmTx(),
-                toggleDialog: () => this.toggleDialog()
-              }}
-            />
+            <Modal>
+              <Dialog>
+                <h3>Confirm CDP creation?</h3>
+                <p>
+                  You are going to lock up <span>{eth} ETH</span> and receive <span>{dai} DAI</span>.
+                </p>
+                <p>Are you sure you want to proceed with this transaction?</p>
+                <div className="buttons">
+                  <CancelDialogButton onClick={() => this.toggleDialog()}>
+                    Cancel
+                  </CancelDialogButton>
+                  <AcceptDialogButton onClick={() => this.confirmTx()}>Accept</AcceptDialogButton>
+                </div>
+              </Dialog>
+            </Modal>
           )}
 
-          {showWaitingAction && <Waiting />}
-          {showMiningNotice && <Mining />}
-          {loadingData && <Loading />}
+          {showWaitingAction && (
+            <Modal>
+              <Dialog>
+                <h3>Waiting...</h3>
+                <p>Please accept pending transaction on your wallet.</p>
+                <img src="/images/waiting-coin.svg" alt="Waiting" />
+              </Dialog>
+            </Modal>
+          )}
+
+          {showMiningNotice && (
+            <Modal>
+              <Dialog>
+                <h3>Creating CDP!</h3>
+                <p>Your CDP creation transaction is in progress on the blockchain.</p>
+                <p>Please be patient till it finishes, shouldn't take too long.</p>
+                <img src="/images/working-gears.svg" alt="Mining" />
+              </Dialog>
+            </Modal>
+          )}
+
+          {loadingData && (
+            <Modal>
+              <Dialog>
+                <h3>Loading...</h3>
+                <p>Your new CDP has been created!</p>
+                <p>Now please wait while new data is being loaded.</p>
+                <img src="/images/loading-coffee.svg" alt="Loading" />
+              </Dialog>
+            </Modal>
+          )}
         </Layout>
       </ThemeProvider>
     );
