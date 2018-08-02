@@ -168,6 +168,7 @@ export const HelpIcon = styled.i`
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  z-index: 100;
 
   width: 1rem;
   height: 1rem;
@@ -179,21 +180,25 @@ export const HelpIcon = styled.i`
   font-weight: 600;
 `;
 
-// const HelpBubble = styled.div`
-//   position: absolute;
-//   top: -2rem;
-// `;
-//
-// export const HelpPopup = props => (
-//   <HelpBubble>
-//     <HelpText>
-//       {props.textLines.map(textline => <p>{textline}</p>)}
-//     </HelpText>
-//     <HelpTrail>
-//
-//     </HelpTrail>
-//   </HelpBubble>
-// );
+const HelpBubble = styled.div`
+  position: absolute;
+  bottom: 2rem;
+  left: 0;
+  padding: 0 1rem;
+  z-index: 100;
+
+  max-width: 10rem;
+  width: 100%;
+
+  line-height: 1.2rem;
+  color: ${({ theme }) => theme.color.sectionTag};
+
+  background-color: ${({ theme }) => theme.color.secondary};
+  border: 2px solid ${({ theme }) => theme.color.helpBorder};
+  border-radius: ${({ theme }) => theme.border.radius};
+`;
+
+export const HelpPopup = props => <HelpBubble>{props.children}</HelpBubble>;
 
 export const Block = styled.div`
   display: flex;
@@ -207,6 +212,7 @@ export const Block = styled.div`
     div:nth-child(1) {
       display: flex;
       justify-content: flex-start;
+      position: relative;
 
       ${HelpIcon} {
         margin-left: 0.5rem;
@@ -240,11 +246,11 @@ export const Block = styled.div`
   }
 
   .safety-percent {
-    font-size: 3rem;
     position: absolute;
-    width: 24rem;
-    text-align: center;
     top: -1.8rem;
+    width: 24rem;
+    font-size: 3rem;
+    text-align: center;
     color: ${({ theme }) => theme.color.gray};
 
     i {

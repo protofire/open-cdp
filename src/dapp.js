@@ -21,7 +21,8 @@ import {
   Modal,
   Dialog,
   CancelDialogButton,
-  AcceptDialogButton
+  AcceptDialogButton,
+  HelpPopup
 } from "./components";
 
 class Dapp extends Component {
@@ -110,7 +111,8 @@ class Dapp extends Component {
     showAdvanced: false,
     showDialogTx: false,
     showWaitingAction: false,
-    showMiningNotice: false
+    showMiningNotice: false,
+    showHelp: ""
   };
 
   getLiquidationPrice = () => ((this.state.ethPrice * this.state.safety) / 100).toFixed(2);
@@ -151,11 +153,13 @@ class Dapp extends Component {
     await this.setState({ eth, dai, leverage, safety, liquidationPrice });
   };
 
-  createCdp = () => this.setState({ showDialogTx: true });
+  showHelp = showHelp => this.setState({ showHelp });
 
   toggleOptions = () => this.setState(prevState => ({ showAdvanced: !prevState.showAdvanced }));
 
   toggleDialog = () => this.setState(prevState => ({ showDialogTx: !prevState.showDialogTx }));
+
+  createCdp = () => this.setState({ showDialogTx: true });
 
   confirmTx = () => {
     this.toggleDialog();
@@ -181,12 +185,12 @@ class Dapp extends Component {
       leverage,
       safety,
       liquidationPrice,
-      // loadingData,
       loadingData,
       showAdvanced,
       showDialogTx,
       showWaitingAction,
-      showMiningNotice
+      showMiningNotice,
+      showHelp
     } = this.state;
     const ethInUsd = walletEth * ethPrice;
     const wizEthInUsd = eth * ethPrice;
@@ -218,7 +222,17 @@ class Dapp extends Component {
                 <label htmlFor="eth">
                   <div>
                     <span>ETH to lock up</span>
-                    <HelpIcon>?</HelpIcon>
+                    <HelpIcon
+                      onMouseMove={() => this.showHelp("ethToLockUp")}
+                      onMouseOut={() => this.showHelp("")}
+                    >
+                      ?
+                    </HelpIcon>
+                    {showHelp === "ethToLockUp" && (
+                      <HelpPopup>
+                        <p>This is the amount of ETH you should lock up in order to borrow DAIs.</p>
+                      </HelpPopup>
+                    )}
                   </div>
                   <div>
                     <WizardNumberInput
@@ -239,7 +253,20 @@ class Dapp extends Component {
                 <label htmlFor="dai">
                   <div>
                     <span>DAI to get</span>
-                    <HelpIcon>?</HelpIcon>
+                    <HelpIcon
+                      onMouseMove={() => this.showHelp("daiToGet")}
+                      onMouseOut={() => this.showHelp("")}
+                    >
+                      ?
+                    </HelpIcon>
+                    {showHelp === "daiToGet" && (
+                      <HelpPopup>
+                        <p>
+                          This is the total DAIs you can get by creating a new CDP with current
+                          settings.
+                        </p>
+                      </HelpPopup>
+                    )}
                   </div>
                   <div>
                     <WizardNumberInput
@@ -260,7 +287,19 @@ class Dapp extends Component {
                     <label htmlFor="safety">
                       <div>
                         <span>Safety</span>
-                        <HelpIcon>?</HelpIcon>
+                        <HelpIcon
+                          onMouseMove={() => this.showHelp("safety")}
+                          onMouseOut={() => this.showHelp("")}
+                        >
+                          ?
+                        </HelpIcon>
+                        {showHelp === "safety" && (
+                          <HelpPopup>
+                            <p>
+                              % ETH needs to fall by to be liquidated.
+                            </p>
+                          </HelpPopup>
+                        )}
                         <span className="safety-percent">
                           {safety}
                           <i>%</i>
@@ -285,7 +324,19 @@ class Dapp extends Component {
                     <label htmlFor="leverage">
                       <div>
                         <span>Leverage</span>
-                        <HelpIcon>?</HelpIcon>
+                        <HelpIcon
+                          onMouseMove={() => this.showHelp("leverage")}
+                          onMouseOut={() => this.showHelp("")}
+                        >
+                          ?
+                        </HelpIcon>
+                        {showHelp === "leverage" && (
+                          <HelpPopup>
+                            <p>
+                              CDP ratio between ETH and DAI. Another way of manage safety.
+                            </p>
+                          </HelpPopup>
+                        )}
                       </div>
                       <div>
                         <WizardNumberInput
