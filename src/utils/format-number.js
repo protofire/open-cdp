@@ -1,2 +1,5 @@
-export default number =>
-  new Intl.NumberFormat("en-US", { minimumFractionDigits: 2 }).format(number);
+export default (number, maxDecs = 6) =>
+  new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: maxDecs
+  }).format(number);

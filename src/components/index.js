@@ -149,8 +149,12 @@ export const Section = styled.section`
     color: ${({ theme }) => theme.color.sectionTag};
     font-size: 1.2rem;
     background-color: ${({ theme }) => theme.color.main};
-    border-bottom-right-radius: 0.25rem;
-    border-top-left-radius: 0.25rem;
+    border-bottom-right-radius: ${({ theme }) => theme.border.radius};
+    border-top-left-radius: ${({ theme }) => theme.border.radius};
+  }
+
+  .redText {
+    color: red;
   }
 `;
 
@@ -199,6 +203,17 @@ const HelpBubble = styled.div`
 `;
 
 export const HelpPopup = props => <HelpBubble>{props.children}</HelpBubble>;
+
+export const SetMaxEth = styled.span`
+  cursor: pointer;
+  font-size: 0.8rem;
+  margin: auto 0 0 auto;
+  color: ${({ theme }) => theme.color.main};
+
+  &:hover {
+    color: ${({ theme }) => theme.color.secondary};
+  }
+`;
 
 export const Block = styled.div`
   display: flex;
@@ -303,7 +318,7 @@ export const ToggleOptions = styled.span`
   right: 3.8rem;
   bottom: 0;
   font-size: 1rem;
-  color: ${({ theme }) => theme.color.gray};
+  color: ${({ theme }) => theme.color.main};
 `;
 
 const Input = styled.input`
@@ -332,7 +347,6 @@ export const WizardNumberInput = styled(Input).attrs({
   min-height: 2.8rem;
   line-height: 2.8rem;
   -moz-appearance: textfield;
-}
 
   &:focus {
     outline: none;
@@ -448,7 +462,7 @@ export const Slider = styled.input.attrs({
     cursor: pointer;
     box-shadow: 1px 1px 1px #000000, 0 0 1px #0d0d0d;
     background-image: linear-gradient(to right, #d1050d, #d15500, #c58300, #afaa00, #8ecd00);
-    border-radius: 1.3px;
+    border-radius: 0; //1.3px;
     border: 0.2px solid #010101;
   }
 
@@ -474,16 +488,16 @@ export const Slider = styled.input.attrs({
     cursor: pointer;
     box-shadow: 1px 1px 1px #000000, 0 0 1px #0d0d0d;
     background-image: linear-gradient(to right, #d1050d, #d15500, #c58300, #afaa00, #8ecd00);
-    border-radius: 1.3px;
+    border-radius: 0; //1.3px;
     border: 0.2px solid #010101;
   }
 
   &::-moz-range-thumb {
     box-shadow: 0.9px 0.9px 1px #000031, 0 0 0.9px #00004b;
     border: 1.8px solid #000020;
-    height: 26px;
-    width: 26px;
-    border-radius: 13px;
+    height: 1.5rem;
+    width: 1.5rem;
+    border-radius: 50%;
     background: #ffffff;
     cursor: pointer;
   }
@@ -500,23 +514,23 @@ export const Slider = styled.input.attrs({
   &::-ms-fill-lower {
     background-image: linear-gradient(to right, #d1050d, #d15500, #c58300, #afaa00, #8ecd00);
     border: 0.2px solid #010101;
-    border-radius: 2.6px;
+    border-radius: 0; //2.6px;
     box-shadow: 1px 1px 1px #000000, 0 0 1px #0d0d0d;
   }
 
   &::-ms-fill-upper {
     background-image: linear-gradient(to right, #d1050d, #d15500, #c58300, #afaa00, #8ecd00);
     border: 0.2px solid #010101;
-    border-radius: 2.6px;
+    border-radius: 0; //2.6px;
     box-shadow: 1px 1px 1px #000000, 0 0 1px #0d0d0d;
   }
 
   &::-ms-thumb {
     box-shadow: 0.9px 0.9px 1px #000031, 0 0 0.9px #00004b;
     border: 1.8px solid #000020;
-    height: 26px;
-    width: 26px;
-    border-radius: 13px;
+    height: 1.5rem;
+    width: 1.5rem;
+    border-radius: 50%;
     background: #ffffff;
     cursor: pointer;
   }

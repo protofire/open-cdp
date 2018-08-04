@@ -13,6 +13,7 @@ import {
   Section,
   Block,
   HelpIcon,
+  SetMaxEth,
   Button,
   Slider,
   Address,
@@ -24,6 +25,8 @@ import {
   AcceptDialogButton,
   HelpPopup
 } from "./components";
+import { NoWeb3 } from "./components/static";
+
 
 class Dapp extends Component {
   constructor(props) {
@@ -46,41 +49,8 @@ class Dapp extends Component {
     //   } = eventObj.payload;
     //   console.log("web3/INITIALIZED", type, url);
     // });
-    //
-    // maker.on("web3/CONNECTED", eventObj => {
-    //   const { api, network, node } = eventObj.payload;
-    //   console.log("web3/CONNECTED", api, network, node);
-    // });
-    //
-    // maker.on("web3/AUTHENTICATED", eventObj =>
-    //   console.log("web3 authenticated with account", eventObj.payload.account)
-    // );
-    //
-    // maker.on("web3/DEAUTHENTICATED", () => console.log("web3/DEAUTHENTICATED"));
-    //
-    // maker.on("web3/DISCONNECTED", () => console.log("web3/DISCONNECTED"));
-    //
-    // maker.on("price/ETH_USD", eventObj => {
-    //   const { price } = eventObj.payload;
-    //   console.log("ETH price changed to", price);
-    // });
-    //
-    // maker.on("price/MKR_USD", eventObj => {
-    //   const { price } = eventObj.payload;
-    //   console.log("MKR price changed to", price);
-    // });
-    //
-    // maker.on("price/WETH_PETH", eventObj => {
-    //   const { ratio } = eventObj.payload;
-    //   console.log("WETH ratio changed to", ratio);
-    // });
 
-    // const price = maker.service('price');
-    // console.log(price);
-    // (async () => {
-    //   const ethPrice = await price.getEthPrice();
-    //   console.log(ethPrice);
-    // })();
+    this.wizardEthRef = React.createRef();
   }
 
   constants = {
@@ -90,6 +60,7 @@ class Dapp extends Component {
 
   emptyInitialState = {
     ethPrice: 420.64,
+    // ethPrice: web3.toBigNumber(420.64),
     // maker
     daiPrice: 1.02,
     totalCdps: 105232,
@@ -103,7 +74,7 @@ class Dapp extends Component {
     // wizard
     eth: "",
     dai: "",
-    leverage: "",
+    leverage: (4 / 3).toFixed(3),
     safety: 50,
     liquidationPrice: "",
     // flags
@@ -115,37 +86,45 @@ class Dapp extends Component {
     showHelp: ""
   };
 
-  getLiquidationPrice = () => ((this.state.ethPrice * this.state.safety) / 100).toFixed(2);
+  getLiquidationPrice = () => ((this.state.ethPrice * (100 - this.state.safety)) / 100).toFixed(2);
 
-  handleWizardChange = name => async event => {
-    const { value } = event.target;
+  handleWizardChange = name => async eventOrNode => {
+    const { value } = eventOrNode.target || eventOrNode;
     await this.setState({ [name]: value });
 
-    const { walletEth } = this.state;
+    const { ethPrice, walletEth } = this.state;
 
     let { eth, dai, leverage, safety } = this.state;
 
-    if (!eth) {
+    if (name !== "eth" && !eth) {
       eth = walletEth;
     }
 
+    const getDaiAmount = leverage => (eth * ethPrice * (leverage - 1)).toFixed(2);
+
     switch (name) {
       case "eth":
+        if (eth < 0) {
+          eth = 0;
+        }
+        dai = (eth * ethPrice * (leverage - 1)).toFixed(2);
         break;
       case "dai":
+        if (dai < 0) {
+          dai = 0;
+        }
+        eth = dai === "" ? "" : (dai / ethPrice / (leverage - 1)).toFixed(6);
         break;
       case "leverage":
         safety = Math.round(-150 * leverage + 250);
+        dai = getDaiAmount(leverage);
         break;
       case "safety":
-        leverage = (-0.006666667 * safety + 1.666667).toFixed(3);
+        leverage = ((-2 / 300) * safety + 5 / 3).toFixed(3);
+        dai = getDaiAmount(leverage);
         break;
       default:
         break;
-    }
-
-    if (name === "leverage" || name === "safety") {
-      dai = (Math.exp(0.0954735 * safety) * eth).toFixed(2);
     }
 
     const liquidationPrice = this.getLiquidationPrice();
@@ -154,6 +133,11 @@ class Dapp extends Component {
   };
 
   showHelp = showHelp => this.setState({ showHelp });
+
+  setMaxEth = () =>
+    this.setState({ eth: this.state.walletEth }, () =>
+      this.handleWizardChange("eth")(this.wizardEthRef)
+    );
 
   toggleOptions = () => this.setState(prevState => ({ showAdvanced: !prevState.showAdvanced }));
 
@@ -170,6 +154,10 @@ class Dapp extends Component {
   };
 
   render() {
+    // if (!window.web3) {
+    //   return <NoWeb3 />
+    // }
+
     const {
       ethPrice,
       daiPrice,
@@ -195,6 +183,7 @@ class Dapp extends Component {
     const ethInUsd = walletEth * ethPrice;
     const wizEthInUsd = eth * ethPrice;
     const createCdpDisabled = !(eth && dai);
+    const noEnoughEth = eth > walletEth;
 
     return (
       <ThemeProvider theme={theme}>
@@ -210,7 +199,7 @@ class Dapp extends Component {
                 <span>{walletDai ? formatNumber(walletDai) : "-"} DAI</span>
                 <span>
                   {walletEth ? formatNumber(walletEth) : "-"} ETH{" "}
-                  <i className="eth-in-usd">({formatNumber(ethInUsd)} U$D)</i>
+                  <i className="eth-in-usd">({formatNumber(ethInUsd, 2)} U$D)</i>
                 </span>
                 <span>{walletPeth ? formatNumber(walletPeth) : "-"} PETH</span>
               </Block>
@@ -233,6 +222,7 @@ class Dapp extends Component {
                         <p>This is the amount of ETH you should lock up in order to borrow DAIs.</p>
                       </HelpPopup>
                     )}
+                    <SetMaxEth onClick={() => this.setMaxEth()}>set max</SetMaxEth>
                   </div>
                   <div>
                     <WizardNumberInput
@@ -240,12 +230,16 @@ class Dapp extends Component {
                       value={eth}
                       placeholder="0.00"
                       step={0.0001}
+                      className={noEnoughEth ? "redText" : ""}
                       onChange={this.handleWizardChange("eth")}
+                      innerRef={el => {
+                        this.wizardEthRef = el;
+                      }}
                     />
                     <span>ETH</span>
                   </div>
                   <div>
-                    <span>min 0.01ETH</span>
+                    <span>min 0.01 ETH</span>
                     <span>{formatNumber(wizEthInUsd)} U$D</span>
                   </div>
                 </label>
@@ -295,9 +289,7 @@ class Dapp extends Component {
                         </HelpIcon>
                         {showHelp === "safety" && (
                           <HelpPopup>
-                            <p>
-                              % ETH needs to fall by to be liquidated.
-                            </p>
+                            <p>% ETH needs to fall by to be liquidated.</p>
                           </HelpPopup>
                         )}
                         <span className="safety-percent">
@@ -332,9 +324,7 @@ class Dapp extends Component {
                         </HelpIcon>
                         {showHelp === "leverage" && (
                           <HelpPopup>
-                            <p>
-                              CDP ratio between ETH and DAI. Another way of manage safety.
-                            </p>
+                            <p>CDP ratio between ETH and DAI. Another way of manage safety.</p>
                           </HelpPopup>
                         )}
                       </div>
@@ -359,7 +349,7 @@ class Dapp extends Component {
                 <p className="textual">
                   CDP liquidation would start if ETH goes below <span>{liquidationPrice}</span> (-{
                     safety
-                  }%). You can borrow up to <span>{dai}</span> DAI
+                  }%). You can borrow up to <span>{dai || "0"}</span> DAI
                 </p>
               </Block>
 
