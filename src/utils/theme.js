@@ -4,7 +4,6 @@ export default {
     main: "steelblue",
     secondary: "#2eaf93",
     heart: "#dd4b39",
-    help: "steelblue",
     helpBorder: "#22765d82",
     bodyBg: "white",
     sectionBg: "#ffffff",
