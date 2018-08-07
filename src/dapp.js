@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { ThemeProvider } from "styled-components";
 
 // using ./utils/check-web3 till maker package works
-import web3Checker from "./utils/check-web3";
+// import web3Checker from "./utils/check-web3";
 import theme from "./utils/theme";
 import formatNumber from "./utils/format-number";
 import {
@@ -47,7 +47,6 @@ class DApp extends Component {
 
   emptyInitialState = {
     ethPrice: -1,
-    // ethPrice: web3.toBigNumber(420.64),
     // maker
     daiPrice: -1,
     totalCdps: -1,
@@ -74,7 +73,6 @@ class DApp extends Component {
 
   mockedStateValues = {
     ethPrice: 420.64,
-    // ethPrice: web3.toBigNumber(420.64),
     // maker
     daiPrice: 1.02,
     totalCdps: 105232,
@@ -93,7 +91,7 @@ class DApp extends Component {
   };
 
   componentDidMount() {
-    web3Checker().then(web3Status => this.setState({ web3Status }));
+    // web3Checker().then(web3Status => this.setState({ web3Status }));
   }
 
   handleWizardChange = name => async eventOrNode => {
@@ -244,6 +242,7 @@ class DApp extends Component {
                           value={eth}
                           placeholder="0.00"
                           step={0.0001}
+                          min={0.01}
                           className={noEnoughEth ? "redText" : ""}
                           onChange={this.handleWizardChange("eth")}
                           innerRef={el => {
