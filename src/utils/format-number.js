@@ -1,6 +1,6 @@
-export default (number, maxDecs = 6, locale = "en-US") =>
+export default (number, minDecs = 2, maxDecs = 6, locale = "en-US") =>
   new Intl.NumberFormat(locale, {
-    minimumFractionDigits: 2,
+    minimumFractionDigits: minDecs,
     maximumFractionDigits: maxDecs
   })
     .format(number)

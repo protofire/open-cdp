@@ -210,7 +210,7 @@ class DApp extends Component {
                     </span>
                     <span>
                       {walletEth > -1 ? formatNumber(walletEth) : LS} ETH <IconETH />{" "}
-                      <i className="eth-in-usd">({formatNumber(ethInUsd, 2)} U$D)</i>
+                      <i className="eth-in-usd">({formatNumber(ethInUsd, 2, 2)} U$D)</i>
                     </span>
                   </Block>
                 </Section>
@@ -253,7 +253,7 @@ class DApp extends Component {
                       </div>
                       <div>
                         <span>min 0.01 ETH</span>
-                        <span>{formatNumber(wizEthInUsd)} U$D</span>
+                        <span>{formatNumber(wizEthInUsd, 2, 2)} U$D</span>
                       </div>
                     </label>
 
@@ -390,23 +390,23 @@ class DApp extends Component {
 
                 <Section className="general-info">
                   <div>
-                    <span>{ethPrice > -1 ? ethPrice : LS}</span>
+                    <span>{ethPrice > -1 ? formatNumber(ethPrice) : LS}</span>
                     <span>ETH price</span>
                   </div>
                   <div>
-                    <span>{daiPrice > -1 ? daiPrice : LS}</span>
+                    <span>{daiPrice > -1 ? formatNumber(daiPrice) : LS}</span>
                     <span>DAI price</span>
                   </div>
                   <div>
-                    <span>{totalCdps > -1 ? totalCdps : LS}</span>
+                    <span>{totalCdps > -1 ? formatNumber(totalCdps, 0) : LS}</span>
                     <span>Total CDPs</span>
                   </div>
                   <div>
-                    <span>{totalDaiSupply > -1 ? totalDaiSupply : LS}</span>
+                    <span>{totalDaiSupply > -1 ? formatNumber(totalDaiSupply, 0) : LS}</span>
                     <span>Total DAI supply</span>
                   </div>
                   <div>
-                    <span>{totalEthLockedUp > -1 ? totalEthLockedUp : LS}</span>
+                    <span>{totalEthLockedUp > -1 ? formatNumber(totalEthLockedUp, 0) : LS}</span>
                     <span>Total ETH locked up</span>
                   </div>
                 </Section>
