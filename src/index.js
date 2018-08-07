@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import Dapp from "./dapp";
+import DApp from "./dapp";
 import registerServiceWorker from "./registerServiceWorker";
 
-ReactDOM.render(<Dapp />, document.getElementById("root"));
+ReactDOM.render(<DApp />, document.getElementById("root"));
 registerServiceWorker();
