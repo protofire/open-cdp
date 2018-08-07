@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { ThemeProvider } from "styled-components";
-// import Maker from "@makerdao/makerdao-exchange-integration";
 
 // using ./utils/check-web3 till maker package works
 import web3Checker from "./utils/check-web3";
@@ -42,22 +41,6 @@ class DApp extends Component {
     };
 
     this.state.liquidationPrice = this.getLiquidationPrice();
-
-    // const maker = Maker.create("kovan", {
-    //   privateKey: "0x1619221769eddcf59e23d81b66b915375724460717ccf57b6cd94fe5e4fae6f9",
-    //   provider: {
-    //     infuraApiKey: "114062d9830945bab907936452cc21f7"
-    //   }
-    // });
-
-    // const maker = Maker.create("test");
-
-    // maker.on("web3/INITIALIZED", eventObj => {
-    //   const {
-    //     provider: { type, url }
-    //   } = eventObj.payload;
-    //   console.log("web3/INITIALIZED", type, url);
-    // });
 
     this.wizardEthRef = React.createRef();
   }
