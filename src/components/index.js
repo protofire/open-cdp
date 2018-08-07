@@ -39,18 +39,19 @@ export const Header = styled.header`
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-end;
+  padding: 1rem 0;
 
   h1 {
     margin: 0;
-    font-size: 3rem;
+    font-size: 2.3rem;
     font-variant: small-caps;
     color: ${({ theme }) => theme.color.main};
   }
 `;
 
 export const Main = styled.main`
-  flex: 1;
+  flex: 3;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
@@ -59,33 +60,14 @@ export const Main = styled.main`
 export const Footer = styled.footer`
   flex: 1;
   display: flex;
-  flex-direction: column;
-  justify-content: space-around;
+  flex-direction: column-reverse;
   min-width: 63rem;
   max-width: 80rem;
   font-weight: 400;
-
-  > div {
-    display: flex;
-    justify-content: space-between;
-
-    > div {
-      display: flex;
-      flex-direction: column;
-      text-align: center;
-
-      span:first-of-type {
-        font-size: 1.5rem;
-      }
-
-      span:last-of-type {
-        font-size: 0.8rem;
-      }
-    }
-  }
+  padding-bottom: 0.5rem;
 
   > p {
-    margin: 0;
+    margin: 1rem 0 0;
     text-align: center;
 
     > span {
@@ -93,11 +75,6 @@ export const Footer = styled.footer`
       font-size: 1.5rem;
       vertical-align: sub;
     }
-  }
-
-  > div,
-  > p {
-    margin-top: 1rem;
   }
 `;
 
@@ -149,9 +126,52 @@ export const Section = styled.section`
     color: ${({ theme }) => theme.color.sectionTag};
     font-size: 1.2rem;
     background-color: ${({ theme }) => theme.color.main};
-    border-bottom-right-radius: 0.25rem;
-    border-top-left-radius: 0.25rem;
+    border-bottom-right-radius: ${({ theme }) => theme.border.radius};
+    border-top-left-radius: ${({ theme }) => theme.border.radius};
   }
+
+  .redText {
+    color: red;
+  }
+  
+  &.general-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border: none;
+    padding: 0;
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+
+      span:first-of-type {
+        font-size: 1.5rem;
+      }
+
+      span:last-of-type {
+        font-size: 0.8rem;
+      }
+    }
+  }
+  }
+`;
+
+export const IconDAI = styled.img.attrs({
+  src: "/images/token-dai.png",
+  alt: "DAI"
+})`
+  height: 1.3rem;
+  vertical-align: sub;
+`;
+
+export const IconETH = styled.img.attrs({
+  src: "/images/token-eth.png",
+  alt: "ETH"
+})`
+  height: 1.3rem;
+  vertical-align: sub;
 `;
 
 export const Address = styled.span`
@@ -172,7 +192,7 @@ export const HelpIcon = styled.i`
 
   width: 1rem;
   height: 1rem;
-  color: ${({ theme }) => theme.color.help};
+  color: ${({ theme }) => theme.color.main};
   border: 2px solid ${({ theme }) => theme.color.help};
   border-radius: 50%;
   font-size: 1rem;
@@ -199,6 +219,17 @@ const HelpBubble = styled.div`
 `;
 
 export const HelpPopup = props => <HelpBubble>{props.children}</HelpBubble>;
+
+export const SetMaxEth = styled.span`
+  cursor: pointer;
+  font-size: 0.8rem;
+  margin: auto 0 0 auto;
+  color: ${({ theme }) => theme.color.main};
+
+  &:hover {
+    color: ${({ theme }) => theme.color.secondary};
+  }
+`;
 
 export const Block = styled.div`
   display: flex;
@@ -241,7 +272,7 @@ export const Block = styled.div`
 
   .eth-in-usd {
     color: ${({ theme }) => theme.color.gray};
-    font-size: 1rem;
+    font-size: 0.8rem;
     font-style: normal;
   }
 
@@ -303,7 +334,7 @@ export const ToggleOptions = styled.span`
   right: 3.8rem;
   bottom: 0;
   font-size: 1rem;
-  color: ${({ theme }) => theme.color.gray};
+  color: ${({ theme }) => theme.color.main};
 `;
 
 const Input = styled.input`
@@ -332,7 +363,6 @@ export const WizardNumberInput = styled(Input).attrs({
   min-height: 2.8rem;
   line-height: 2.8rem;
   -moz-appearance: textfield;
-}
 
   &:focus {
     outline: none;
@@ -352,6 +382,10 @@ export const Button = styled.button.attrs({
   font-weight: 500;
   line-height: 2rem;
   padding: 0.5rem 0.8rem;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
 `;
 
 export const Modal = styled.div`
@@ -448,7 +482,7 @@ export const Slider = styled.input.attrs({
     cursor: pointer;
     box-shadow: 1px 1px 1px #000000, 0 0 1px #0d0d0d;
     background-image: linear-gradient(to right, #d1050d, #d15500, #c58300, #afaa00, #8ecd00);
-    border-radius: 1.3px;
+    border-radius: 0; //1.3px;
     border: 0.2px solid #010101;
   }
 
@@ -474,16 +508,16 @@ export const Slider = styled.input.attrs({
     cursor: pointer;
     box-shadow: 1px 1px 1px #000000, 0 0 1px #0d0d0d;
     background-image: linear-gradient(to right, #d1050d, #d15500, #c58300, #afaa00, #8ecd00);
-    border-radius: 1.3px;
+    border-radius: 0; //1.3px;
     border: 0.2px solid #010101;
   }
 
   &::-moz-range-thumb {
     box-shadow: 0.9px 0.9px 1px #000031, 0 0 0.9px #00004b;
     border: 1.8px solid #000020;
-    height: 26px;
-    width: 26px;
-    border-radius: 13px;
+    height: 1.5rem;
+    width: 1.5rem;
+    border-radius: 50%;
     background: #ffffff;
     cursor: pointer;
   }
@@ -500,23 +534,23 @@ export const Slider = styled.input.attrs({
   &::-ms-fill-lower {
     background-image: linear-gradient(to right, #d1050d, #d15500, #c58300, #afaa00, #8ecd00);
     border: 0.2px solid #010101;
-    border-radius: 2.6px;
+    border-radius: 0; //2.6px;
     box-shadow: 1px 1px 1px #000000, 0 0 1px #0d0d0d;
   }
 
   &::-ms-fill-upper {
     background-image: linear-gradient(to right, #d1050d, #d15500, #c58300, #afaa00, #8ecd00);
     border: 0.2px solid #010101;
-    border-radius: 2.6px;
+    border-radius: 0; //2.6px;
     box-shadow: 1px 1px 1px #000000, 0 0 1px #0d0d0d;
   }
 
   &::-ms-thumb {
     box-shadow: 0.9px 0.9px 1px #000031, 0 0 0.9px #00004b;
     border: 1.8px solid #000020;
-    height: 26px;
-    width: 26px;
-    border-radius: 13px;
+    height: 1.5rem;
+    width: 1.5rem;
+    border-radius: 50%;
     background: #ffffff;
     cursor: pointer;
   }
