@@ -39,18 +39,19 @@ export const Header = styled.header`
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-end;
+  padding: 1rem 0;
 
   h1 {
     margin: 0;
-    font-size: 3rem;
+    font-size: 2.3rem;
     font-variant: small-caps;
     color: ${({ theme }) => theme.color.main};
   }
 `;
 
 export const Main = styled.main`
-  flex: 1;
+  flex: 3;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
@@ -59,33 +60,14 @@ export const Main = styled.main`
 export const Footer = styled.footer`
   flex: 1;
   display: flex;
-  flex-direction: column;
-  justify-content: space-around;
+  flex-direction: column-reverse;
   min-width: 63rem;
   max-width: 80rem;
   font-weight: 400;
-
-  > div {
-    display: flex;
-    justify-content: space-between;
-
-    > div {
-      display: flex;
-      flex-direction: column;
-      text-align: center;
-
-      span:first-of-type {
-        font-size: 1.5rem;
-      }
-
-      span:last-of-type {
-        font-size: 0.8rem;
-      }
-    }
-  }
+  padding-bottom: 0.5rem;
 
   > p {
-    margin: 0;
+    margin: 1rem 0 0;
     text-align: center;
 
     > span {
@@ -93,11 +75,6 @@ export const Footer = styled.footer`
       font-size: 1.5rem;
       vertical-align: sub;
     }
-  }
-
-  > div,
-  > p {
-    margin-top: 1rem;
   }
 `;
 
@@ -156,6 +133,45 @@ export const Section = styled.section`
   .redText {
     color: red;
   }
+  
+  &.general-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border: none;
+    padding: 0;
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+
+      span:first-of-type {
+        font-size: 1.5rem;
+      }
+
+      span:last-of-type {
+        font-size: 0.8rem;
+      }
+    }
+  }
+  }
+`;
+
+export const IconDAI = styled.img.attrs({
+  src: "/images/token-dai.png",
+  alt: "DAI"
+})`
+  height: 1.3rem;
+  vertical-align: sub;
+`;
+
+export const IconETH = styled.img.attrs({
+  src: "/images/token-eth.png",
+  alt: "ETH"
+})`
+  height: 1.3rem;
+  vertical-align: sub;
 `;
 
 export const Address = styled.span`
@@ -176,7 +192,7 @@ export const HelpIcon = styled.i`
 
   width: 1rem;
   height: 1rem;
-  color: ${({ theme }) => theme.color.help};
+  color: ${({ theme }) => theme.color.main};
   border: 2px solid ${({ theme }) => theme.color.help};
   border-radius: 50%;
   font-size: 1rem;
@@ -256,7 +272,7 @@ export const Block = styled.div`
 
   .eth-in-usd {
     color: ${({ theme }) => theme.color.gray};
-    font-size: 1rem;
+    font-size: 0.8rem;
     font-style: normal;
   }
 
@@ -366,6 +382,10 @@ export const Button = styled.button.attrs({
   font-weight: 500;
   line-height: 2rem;
   padding: 0.5rem 0.8rem;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
 `;
 
 export const Modal = styled.div`
