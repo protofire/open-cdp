@@ -10,7 +10,8 @@ export default {
     sectionTag: "#ffffff",
     gray: "#505050",
     softGray: "#ababab",
-    modalBg: "rgba(0, 0, 0, 0.7)"
+    modalBg: "rgba(0, 0, 0, 0.7)",
+    demoBg: "darksalmon"
   },
   border: {
     // radius: 0
