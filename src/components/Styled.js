@@ -62,7 +62,8 @@ export const Footer = styled.footer`
   display: flex;
   flex-direction: column-reverse;
   min-width: 63rem;
-  max-width: 80rem;
+  max-width: 63rem;
+  width: 100%;
   font-weight: 400;
   padding-bottom: 0.5rem;
 
@@ -219,6 +220,46 @@ const HelpBubble = styled.div`
 `;
 
 export const HelpPopup = props => <HelpBubble>{props.children}</HelpBubble>;
+
+export const WalletCdps = styled.div`
+  width: 100%;
+
+  table {
+    width: 100%;
+    font-size: 1rem;
+    text-align: center;
+
+    thead,
+    tbody {
+      display: block;
+    }
+
+    tbody tr,
+    thead tr {
+      td,
+      th {
+        width: 11rem;
+        padding: 0.3rem 0;
+      }
+
+      td:first-of-type,
+      th:first-of-type {
+        width: 7rem;
+      }
+
+      td:last-of-type,
+      th:last-of-type {
+        width: 23rem;
+      }
+    }
+
+    tbody {
+      height: 9rem;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+  }
+`;
 
 export const SetMaxEth = styled.span`
   cursor: pointer;
@@ -444,6 +485,15 @@ export const Dialog = styled.div`
     align-items: center;
     margin: 1rem 0 1.5rem;
     width: 100%;
+  }
+
+  a.tx-etherscan,
+  &:visited,
+  &:active {
+    color: ${({ theme }) => theme.color.main};
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
   }
 `;
 
