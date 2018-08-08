@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { ThemeProvider } from "styled-components";
+import { CSSTransitionGroup } from "react-transition-group";
 
 // using ./utils/check-web3 till maker package works
 // import web3Checker from "./utils/check-web3";
@@ -11,15 +12,19 @@ import {
   Main,
   Footer,
   Github,
+  Protofire,
   Section,
   Block,
   HelpIcon,
   SetMaxEth,
   Button,
   Slider,
+  TokenIconWrapper,
   IconDAI,
   IconETH,
+  DollarSign,
   Address,
+  WalletCdpsTable,
   ToggleOptions,
   WizardNumberInput,
   Modal,
@@ -27,8 +32,8 @@ import {
   CancelDialogButton,
   AcceptDialogButton,
   HelpPopup
-} from "./components";
-import { NoWeb3Screen, NoAccountScreen } from "./components/Static";
+} from "./components/Styled";
+import { NoWeb3Screen, NoAccountScreen } from "./components/WalletCheckScreens";
 
 class DApp extends Component {
   constructor(props) {
@@ -36,8 +41,8 @@ class DApp extends Component {
 
     this.state = {
       web3Status: "ok",
-      ...this.emptyInitialState,
-      ...this.mockedStateValues
+      ...this.emptyInitialState(),
+      ...this.mockedStateValues()
     };
 
     this.state.liquidationPrice = this.getLiquidationPrice();
@@ -45,7 +50,7 @@ class DApp extends Component {
     this.wizardEthRef = React.createRef();
   }
 
-  emptyInitialState = {
+  emptyInitialState = () => ({
     ethPrice: -1,
     // maker
     daiPrice: -1,
@@ -68,10 +73,11 @@ class DApp extends Component {
     showDialogTx: false,
     showWaitingAction: false,
     showMiningNotice: false,
+    showComingSoonModal: false,
     showHelp: ""
-  };
+  });
 
-  mockedStateValues = {
+  mockedStateValues = () => ({
     ethPrice: 420.64,
     // maker
     daiPrice: 1.02,
@@ -79,16 +85,19 @@ class DApp extends Component {
     totalDaiSupply: 2129501294,
     totalEthLockedUp: 4919825,
     // wallet
-    walletAddress: "0x7557F009a3F16ebBeDC469515D3dAC5CbE9C3939",
+    walletAddress: "0x0000000000000000000000000000000000000000",
     walletDai: 234,
     walletEth: 0.7132,
+    walletCdps: this.getWalletCdps(),
     // wizard
     eth: "",
     dai: "",
     leverage: (4 / 3).toFixed(3),
     safety: 50,
-    liquidationPrice: ""
-  };
+    liquidationPrice: "",
+    // TX
+    currentTx: "0x0000000000000000000000000000000000000000000000000000000000000000"
+  });
 
   componentDidMount() {
     // web3Checker().then(web3Status => this.setState({ web3Status }));
@@ -138,11 +147,65 @@ class DApp extends Component {
     await this.setState({ eth, dai, leverage, safety, liquidationPrice });
   };
 
+  getWalletCdps = () => [
+    {
+      id: 123,
+      borrowedDai: 230.876,
+      lockedEth: 1.923,
+      liquidationPrice: 390.893
+    },
+    {
+      id: 133,
+      borrowedDai: 376,
+      lockedEth: 2.567,
+      liquidationPrice: 400.123
+    },
+    {
+      id: 135,
+      borrowedDai: 50,
+      lockedEth: 0.134,
+      liquidationPrice: 251.785
+    },
+    {
+      id: 189,
+      borrowedDai: 8970.897,
+      lockedEth: 38.343,
+      liquidationPrice: 356.98
+    },
+    {
+      id: 235,
+      borrowedDai: 230.876,
+      lockedEth: 1.923,
+      liquidationPrice: 390.893
+    },
+    {
+      id: 267,
+      borrowedDai: 376,
+      lockedEth: 2.567,
+      liquidationPrice: 400.123
+    },
+    {
+      id: 342,
+      borrowedDai: 50,
+      lockedEth: 0.134,
+      liquidationPrice: 251.785
+    },
+    {
+      id: 346,
+      borrowedDai: 8970.897,
+      lockedEth: 38.343,
+      liquidationPrice: 356.98
+    }
+  ];
+
   getLiquidationPrice = () => ((this.state.ethPrice * (100 - this.state.safety)) / 100).toFixed(2);
 
   toggleOptions = () => this.setState(prevState => ({ showAdvanced: !prevState.showAdvanced }));
 
   toggleDialog = () => this.setState(prevState => ({ showDialogTx: !prevState.showDialogTx }));
+
+  toggleComingSoonModal = () =>
+    this.setState(prevState => ({ showComingSoonModal: !prevState.showComingSoonModal }));
 
   showHelp = showHelp => this.setState({ showHelp });
 
@@ -164,6 +227,7 @@ class DApp extends Component {
   render() {
     const {
       web3Status,
+      walletCdps,
       ethPrice,
       daiPrice,
       totalCdps,
@@ -177,11 +241,13 @@ class DApp extends Component {
       leverage,
       safety,
       liquidationPrice,
+      currentTx,
       loadingData,
       showAdvanced,
       showDialogTx,
       showWaitingAction,
       showMiningNotice,
+      showComingSoonModal,
       showHelp
     } = this.state;
     const ethInUsd = walletEth * ethPrice;
@@ -195,6 +261,7 @@ class DApp extends Component {
         <Layout>
           <Header>
             <h1>Borrow money using cryptocurrency as collateral</h1>
+            <h4>This is a demo DApp. Data is faked, formulas are real.</h4>
           </Header>
           <Main>
             {web3Status === "noWeb3" && <NoWeb3Screen />}
@@ -205,13 +272,13 @@ class DApp extends Component {
                   <h2>My Wallet</h2>
                   <Address>Your address: {walletAddress || "-"}</Address>
                   <Block>
-                    <span>
+                    <TokenIconWrapper>
                       {walletDai > -1 ? formatNumber(walletDai) : LS} DAI <IconDAI />
-                    </span>
-                    <span>
+                    </TokenIconWrapper>
+                    <TokenIconWrapper>
                       {walletEth > -1 ? formatNumber(walletEth) : LS} ETH <IconETH />{" "}
-                      <i className="eth-in-usd">({formatNumber(ethInUsd, 2)} U$D)</i>
-                    </span>
+                      <i className="eth-in-usd">({formatNumber(ethInUsd, 2, 2)} U$D)</i>
+                    </TokenIconWrapper>
                   </Block>
                 </Section>
 
@@ -253,7 +320,7 @@ class DApp extends Component {
                       </div>
                       <div>
                         <span>min 0.01 ETH</span>
-                        <span>{formatNumber(wizEthInUsd)} U$D</span>
+                        <span>{formatNumber(wizEthInUsd, 2, 2)} U$D</span>
                       </div>
                     </label>
 
@@ -288,80 +355,89 @@ class DApp extends Component {
                     </label>
                   </Block>
 
-                  {showAdvanced && (
-                    <Block>
-                      <div>
-                        <label htmlFor="safety">
-                          <div>
-                            <span>Safety</span>
-                            <HelpIcon
-                              onMouseMove={() => this.showHelp("safety")}
-                              onMouseOut={() => this.showHelp("")}
-                            >
-                              ?
-                            </HelpIcon>
-                            {showHelp === "safety" && (
-                              <HelpPopup>
-                                <p>% ETH needs to fall by to be liquidated.</p>
-                              </HelpPopup>
-                            )}
-                            <span className="safety-percent">
-                              {safety > -1 ? safety : 50}
-                              <i>%</i>
-                            </span>
-                          </div>
-                          <Slider
-                            name="Safety"
-                            value={safety > -1 ? safety : 50}
-                            onChange={this.handleWizardChange("safety")}
-                            min="0"
-                            max="100"
-                            step={1}
-                          />
-                          <div className="safety-points">
-                            <span>Low</span>
-                            <span>Mid</span>
-                            <span>High</span>
-                          </div>
-                        </label>
-                      </div>
-                      <div>
-                        <label htmlFor="leverage">
-                          <div>
-                            <span>Leverage</span>
-                            <HelpIcon
-                              onMouseMove={() => this.showHelp("leverage")}
-                              onMouseOut={() => this.showHelp("")}
-                            >
-                              ?
-                            </HelpIcon>
-                            {showHelp === "leverage" && (
-                              <HelpPopup>
-                                <p>CDP ratio between ETH and DAI. Another way of manage safety.</p>
-                              </HelpPopup>
-                            )}
-                          </div>
-                          <div>
-                            <WizardNumberInput
-                              name="Leverage"
-                              value={leverage > -1 ? leverage : ""}
-                              placeholder="-"
-                              min={1}
-                              max={5 / 3}
-                              step={0.001}
-                              onChange={this.handleWizardChange("leverage")}
+                  <CSSTransitionGroup
+                    transitionName="advanced-options"
+                    transitionEnterTimeout={300}
+                    transitionLeaveTimeout={300}
+                  >
+                    {showAdvanced && (
+                      <Block>
+                        <div>
+                          <label htmlFor="safety">
+                            <div>
+                              <span>Safety</span>
+                              <HelpIcon
+                                onMouseMove={() => this.showHelp("safety")}
+                                onMouseOut={() => this.showHelp("")}
+                              >
+                                ?
+                              </HelpIcon>
+                              {showHelp === "safety" && (
+                                <HelpPopup>
+                                  <p>% ETH needs to fall by to be liquidated.</p>
+                                </HelpPopup>
+                              )}
+                              <span className="safety-percent">
+                                {safety > -1 ? safety : 50}
+                                <i>%</i>
+                              </span>
+                            </div>
+                            <Slider
+                              name="Safety"
+                              value={safety > -1 ? safety : 50}
+                              onChange={this.handleWizardChange("safety")}
+                              min="0"
+                              max="100"
+                              step={1}
                             />
-                            <span>X</span>
-                          </div>
-                        </label>
-                      </div>
-                    </Block>
-                  )}
+                            <div className="safety-points">
+                              <span>Low</span>
+                              <span>Mid</span>
+                              <span>High</span>
+                            </div>
+                          </label>
+                        </div>
+                        <div>
+                          <label htmlFor="leverage">
+                            <div>
+                              <span>Leverage</span>
+                              <HelpIcon
+                                onMouseMove={() => this.showHelp("leverage")}
+                                onMouseOut={() => this.showHelp("")}
+                              >
+                                ?
+                              </HelpIcon>
+                              {showHelp === "leverage" && (
+                                <HelpPopup>
+                                  <p>
+                                    CDP ratio between ETH and DAI. Another way of manage safety.
+                                  </p>
+                                </HelpPopup>
+                              )}
+                            </div>
+                            <div>
+                              <WizardNumberInput
+                                name="Leverage"
+                                value={leverage > -1 ? leverage : ""}
+                                placeholder="-"
+                                min={1}
+                                max={5 / 3}
+                                step={0.001}
+                                onChange={this.handleWizardChange("leverage")}
+                              />
+                              <span>X</span>
+                            </div>
+                          </label>
+                        </div>
+                      </Block>
+                    )}
+                  </CSSTransitionGroup>
 
                   <Block>
                     <p className="textual">
                       CDP liquidation would start if ETH goes below{" "}
-                      <span>{liquidationPrice > -1 ? liquidationPrice : LS}</span> (-{safety > -1
+                      <span>U$D {liquidationPrice > -1 ? liquidationPrice : LS}</span> (-{safety >
+                      -1
                         ? safety
                         : LS}%). You can borrow up to <span>{dai || LS}</span> DAI
                     </p>
@@ -376,7 +452,7 @@ class DApp extends Component {
                       Create CDP
                     </Button>
                     <ToggleOptions onClick={() => this.toggleOptions()}>
-                      {showAdvanced ? "Basic" : "Advanced"} options
+                      {showAdvanced ? "▲ Basic" : "▼ Advanced"}
                     </ToggleOptions>
                   </Block>
                 </Section>
@@ -384,29 +460,97 @@ class DApp extends Component {
                 <Section>
                   <h2>My CDPs</h2>
                   <Block>
-                    <span className="no-cdps-found">No CDPs found</span>
+                    {!walletCdps && <span className="no-cdps-found">No CDPs found</span>}
+                    {walletCdps && (
+                      <WalletCdpsTable>
+                        <thead>
+                          <tr>
+                            <th>CDP ID</th>
+                            <th>Borrowed DAI</th>
+                            <th>Locked ETH</th>
+                            <th>Liquidation Price</th>
+                            <th>Manage</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {walletCdps.map(cdp => {
+                            const disabled = cdp.id % 3;
+                            return (
+                              <tr key={cdp.id}>
+                                <td>{cdp.id}</td>
+                                <td>{formatNumber(cdp.borrowedDai, 3, 3)}</td>
+                                <td>{formatNumber(cdp.lockedEth, 3, 3)}</td>
+                                <td>
+                                  <DollarSign /> {formatNumber(cdp.liquidationPrice, 3, 3)}
+                                </td>
+                                <td>
+                                  <button onClick={() => this.toggleComingSoonModal()}>
+                                    Repay
+                                  </button>
+                                  <button
+                                    onClick={() => this.toggleComingSoonModal()}
+                                    disabled={disabled}
+                                  >
+                                    Free
+                                  </button>
+                                  <button
+                                    onClick={() => this.toggleComingSoonModal()}
+                                    disabled={disabled}
+                                  >
+                                    Draw
+                                  </button>
+                                  <button
+                                    onClick={() => this.toggleComingSoonModal()}
+                                    disabled={disabled}
+                                  >
+                                    Wipe
+                                  </button>
+                                  <button onClick={() => this.toggleComingSoonModal()}>Shut</button>
+                                  <button onClick={() => this.toggleComingSoonModal()}>Give</button>
+                                  <button
+                                    onClick={() => this.toggleComingSoonModal()}
+                                    disabled={disabled}
+                                  >
+                                    Bite
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </WalletCdpsTable>
+                    )}
                   </Block>
                 </Section>
 
                 <Section className="general-info">
                   <div>
-                    <span>{ethPrice > -1 ? ethPrice : LS}</span>
+                    <span>
+                      <DollarSign /> {ethPrice > -1 ? formatNumber(ethPrice) : LS}
+                    </span>
                     <span>ETH price</span>
                   </div>
                   <div>
-                    <span>{daiPrice > -1 ? daiPrice : LS}</span>
+                    <span>
+                      <DollarSign /> {daiPrice > -1 ? formatNumber(daiPrice) : LS}
+                    </span>
                     <span>DAI price</span>
                   </div>
                   <div>
-                    <span>{totalCdps > -1 ? totalCdps : LS}</span>
+                    <span>{totalCdps > -1 ? formatNumber(totalCdps, 0) : LS}</span>
                     <span>Total CDPs</span>
                   </div>
                   <div>
-                    <span>{totalDaiSupply > -1 ? totalDaiSupply : LS}</span>
+                    <TokenIconWrapper>
+                      <IconDAI /> {totalDaiSupply > -1 ? formatNumber(totalDaiSupply, 3, 3) : LS}
+                    </TokenIconWrapper>
                     <span>Total DAI supply</span>
                   </div>
                   <div>
-                    <span>{totalEthLockedUp > -1 ? totalEthLockedUp : LS}</span>
+                    <TokenIconWrapper>
+                      <IconETH />{" "}
+                      {totalEthLockedUp > -1 ? formatNumber(totalEthLockedUp, 3, 3) : LS}
+                    </TokenIconWrapper>
                     <span>Total ETH locked up</span>
                   </div>
                 </Section>
@@ -447,6 +591,18 @@ class DApp extends Component {
                     <Dialog>
                       <h3>Creating CDP!</h3>
                       <p>Your CDP creation transaction is in progress on the blockchain.</p>
+                      <p>You can track it with its hash: </p>
+                      <p>
+                        <a
+                          href={`https://etherscan.io/tx/${currentTx}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="View TX on etherscan.io"
+                          className="tx-etherscan"
+                        >
+                          {currentTx}
+                        </a>
+                      </p>
                       <p>Please be patient till it finishes, shouldn't take too long.</p>
                       <img src="/images/working-gears.svg" alt="Mining" />
                     </Dialog>
@@ -463,13 +619,28 @@ class DApp extends Component {
                     </Dialog>
                   </Modal>
                 )}
+
+                {showComingSoonModal && (
+                  <Modal>
+                    <Dialog>
+                      <h3>Coming Soon!</h3>
+                      <p>This feature will be available in future releases.</p>
+                      <img className="coming-soon" src="/images/coming-soon.svg" alt="Coming Soon" />
+                      <div className="buttons">
+                        <CancelDialogButton onClick={() => this.toggleComingSoonModal()}>
+                          Close
+                        </CancelDialogButton>
+                      </div>
+                    </Dialog>
+                  </Modal>
+                )}
               </React.Fragment>
             )}
           </Main>
 
           <Footer>
             <p>
-              OSS made with <span>❤</span> over all around the world. <Github />
+              Open Source <Github />. Made with <span>❤</span> by <Protofire />.
             </p>
           </Footer>
         </Layout>

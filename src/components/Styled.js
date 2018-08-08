@@ -40,7 +40,12 @@ export const Header = styled.header`
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 1rem 0;
+  align-items: center;
+
+  padding: 0;
+  min-height: 4.5rem;
+  max-height: 4.5rem;
+  text-align: center;
 
   h1 {
     margin: 0;
@@ -48,13 +53,23 @@ export const Header = styled.header`
     font-variant: small-caps;
     color: ${({ theme }) => theme.color.main};
   }
+
+  h4 {
+    margin: 0;
+    padding: 0.2rem 0.5rem;
+    user-select: none;
+    font-size: 1rem;
+    font-variant: small-caps;
+    color: ${({ theme }) => theme.color.sectionTag};
+    background-color: ${({ theme }) => theme.color.demoBg};
+  }
 `;
 
 export const Main = styled.main`
   flex: 3;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: flex-start;
 `;
 
 export const Footer = styled.footer`
@@ -62,7 +77,8 @@ export const Footer = styled.footer`
   display: flex;
   flex-direction: column-reverse;
   min-width: 63rem;
-  max-width: 80rem;
+  max-width: 63rem;
+  width: 100%;
   font-weight: 400;
   padding-bottom: 0.5rem;
 
@@ -88,7 +104,6 @@ const Octocat = styled.img.attrs({
   src: "/images/octocat.png",
   alt: "GitHub"
 })`
-  max-width: 2rem;
   max-height: 2rem;
   vertical-align: text-bottom;
 `;
@@ -99,15 +114,37 @@ export const Github = () => (
   </GithubLink>
 );
 
+const ProtofireLink = styled.a.attrs({
+  href: "https://protofire.io",
+  target: "_blank",
+  rel: "noopener noreferrer"
+})`
+  margin-left: 0.3rem;
+`;
+
+const ProtofireLogo = styled.img.attrs({
+  src: "/images/protofire.png",
+  alt: "Protofire"
+})`
+  max-height: 2rem;
+  vertical-align: bottom;
+`;
+
+export const Protofire = () => (
+  <ProtofireLink>
+    <ProtofireLogo />
+  </ProtofireLink>
+);
+
 export const Section = styled.section`
   position: relative;
   display: flex;
   flex-direction: column;
 
   min-width: 63rem;
-  max-width: 80rem;
+  max-width: 63rem;
 
-  margin: 0.5rem 0;
+  margin: 1rem 0 0;
   padding: 2.4rem 0 0;
 
   font-size: 1.2rem;
@@ -133,7 +170,7 @@ export const Section = styled.section`
   .redText {
     color: red;
   }
-  
+
   &.general-info {
     display: flex;
     flex-direction: row;
@@ -155,7 +192,29 @@ export const Section = styled.section`
       }
     }
   }
+
+  .advanced-options-enter {
+    opacity: 0.01;
   }
+
+  .advanced-options-enter.advanced-options-enter-active {
+    opacity: 1;
+    transition: opacity 500ms ease-in;
+  }
+
+  .advanced-options-leave {
+    opacity: 1;
+  }
+
+  .advanced-options-leave.advanced-options-leave-active {
+    opacity: 0.01;
+    transition: opacity 300ms ease-in;
+  }
+`;
+
+export const TokenIconWrapper = styled.span`
+  display: flex;
+  align-items: center;
 `;
 
 export const IconDAI = styled.img.attrs({
@@ -163,7 +222,7 @@ export const IconDAI = styled.img.attrs({
   alt: "DAI"
 })`
   height: 1.3rem;
-  vertical-align: sub;
+  margin: 0 0.3rem;
 `;
 
 export const IconETH = styled.img.attrs({
@@ -171,8 +230,17 @@ export const IconETH = styled.img.attrs({
   alt: "ETH"
 })`
   height: 1.3rem;
-  vertical-align: sub;
+  margin: 0 0.3rem;
 `;
+
+const DollarSignStyled = styled.i`
+  color: ${({ theme }) => theme.color.gray};
+  font-size: 0.7rem;
+  font-style: normal;
+  font-weight: 600;
+`;
+
+export const DollarSign = () => <DollarSignStyled>U$D</DollarSignStyled>;
 
 export const Address = styled.span`
   position: absolute;
@@ -219,6 +287,68 @@ const HelpBubble = styled.div`
 `;
 
 export const HelpPopup = props => <HelpBubble>{props.children}</HelpBubble>;
+
+export const WalletCdpsTable = styled.table`
+  width: 100%;
+  font-size: 1rem;
+  text-align: center;
+
+  thead,
+  tbody {
+    display: block;
+  }
+
+  thead th {
+    color: ${({ theme }) => theme.color.main};
+  }
+
+  tbody,
+  thead {
+    td,
+    th {
+      width: 11rem;
+      padding: 0.3rem 0;
+    }
+
+    td:first-of-type,
+    th:first-of-type {
+      width: 7rem;
+    }
+
+    td:last-of-type,
+    th:last-of-type {
+      width: 23rem;
+    }
+  }
+
+  tbody {
+    height: 7.8rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  button {
+    padding: 0.3rem 0.4rem;
+    border: 1px solid ${({ theme }) => theme.color.sectionTag};
+    border-radius: 0.5rem;
+    background-color: ${({ theme }) => theme.color.main};
+    color: ${({ theme }) => theme.color.sectionBg};
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+
+    &:hover {
+      background-color: ${({ theme }) => theme.color.secondary};
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      font-style: italic;
+      color: ${({ theme }) => theme.color.softGray};
+      background-color: ${({ theme }) => theme.color.gray};
+    }
+  }
+`;
 
 export const SetMaxEth = styled.span`
   cursor: pointer;
@@ -438,12 +568,25 @@ export const Dialog = styled.div`
     margin: 0.5rem 0 1rem;
   }
 
+  img.coming-soon {
+    margin: 1.5rem 0 0.5rem;
+  }
+
   div.buttons {
     display: flex;
     justify-content: space-around;
     align-items: center;
     margin: 1rem 0 1.5rem;
     width: 100%;
+  }
+
+  a.tx-etherscan,
+  &:visited,
+  &:active {
+    color: ${({ theme }) => theme.color.main};
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
   }
 `;
 
