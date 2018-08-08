@@ -43,8 +43,8 @@ export const Header = styled.header`
   align-items: center;
 
   padding: 0;
-  min-height: 6rem;
-  max-height: 6rem;
+  min-height: 4.5rem;
+  max-height: 4.5rem;
   text-align: center;
 
   h1 {
