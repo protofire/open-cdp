@@ -307,7 +307,7 @@ export const WalletCdpsTable = styled.table`
     td,
     th {
       width: 11rem;
-      padding: 0.3rem 0;
+      padding: 0.24rem 0;
     }
 
     td:first-of-type,
@@ -329,13 +329,14 @@ export const WalletCdpsTable = styled.table`
 
   button {
     padding: 0.3rem 0.4rem;
-    border: 1px solid ${({ theme }) => theme.color.sectionTag};
+    margin: 0 1px;
+    border: 0;
     border-radius: 0.5rem;
     background-color: ${({ theme }) => theme.color.main};
     color: ${({ theme }) => theme.color.sectionBg};
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     font-weight: 500;
-    text-transform: uppercase;
+    font-variant: petite-caps;
 
     &:hover {
       background-color: ${({ theme }) => theme.color.secondary};
@@ -343,7 +344,6 @@ export const WalletCdpsTable = styled.table`
 
     &:disabled {
       cursor: not-allowed;
-      font-style: italic;
       color: ${({ theme }) => theme.color.softGray};
       background-color: ${({ theme }) => theme.color.gray};
     }
@@ -512,9 +512,12 @@ export const Button = styled.button.attrs({
   font-weight: 500;
   line-height: 2rem;
   padding: 0.5rem 0.8rem;
+  font-variant: petite-caps;
 
   &:disabled {
     cursor: not-allowed;
+    color: ${({ theme }) => theme.color.softGray};
+    background-color: ${({ theme }) => theme.color.gray};
   }
 `;
 
