@@ -8,14 +8,16 @@ export const Web3States = {
 
 export default (async function() {
   if (!window.web3 || !window.web3.eth) {
-    return Web3States.NoWeb3;
+    return { res: Web3States.NoWeb3 };
   }
 
   const web3 = new Web3(window.web3.currentProvider);
   const accounts = await web3.eth.getAccounts();
   if (!accounts || !accounts.length) {
-    return Web3States.NoAccount;
+    return { res: Web3States.NoAccount };
   }
 
-  return Web3States.OK;
+  const networkId = await web3.eth.net.getId();
+
+  return { res: Web3States.OK, networkId };
 });
