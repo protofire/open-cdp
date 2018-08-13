@@ -317,6 +317,7 @@ class DApp extends Component {
                   Please login with your preferred wallet manager and choose the address you want to use OpenCDP
                   with.
                 </p>
+                <p>Once logged in, please reload the page.</p>
               </Web3ScreenStyled>
             )}
             {web3Status === Web3States.OK && (
