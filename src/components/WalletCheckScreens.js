@@ -4,6 +4,7 @@ import styled from "styled-components";
 const CommonScreenStyled = styled.div`
   max-width: 30rem;
   padding: 1rem 3rem;
+  margin: auto;
 
   text-align: center;
   color: white;
