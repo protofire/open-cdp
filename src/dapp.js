@@ -31,9 +31,9 @@ import {
   Dialog,
   CancelDialogButton,
   AcceptDialogButton,
-  HelpPopup
+  HelpPopup,
+  Web3ScreenStyled
 } from "./components/Styled";
-import { NoWeb3Screen, NoAccountScreen } from "./components/WalletCheckScreens";
 
 class DApp extends Component {
   constructor(props) {
@@ -116,21 +116,22 @@ class DApp extends Component {
   makerAttachEvents = () => {
     const { Web3States } = this;
 
-    this.maker.on("web3/AUTHENTICATED", eventObj => {
+    this.maker.on("web3/AUTHENTICATED", async eventObj => {
       const { account } = eventObj.payload;
-      this.setState({
+      await this.setState({
         walletAddress: account
       });
+      await this.checkWeb3();
     });
 
-    this.maker.on("web3/DEAUTHENTICATED", () => {
-      this.setState({ walletAddress: '...' });
-      return this.checkWeb3();
+    this.maker.on("web3/DEAUTHENTICATED", async () => {
+      await this.setState({ walletAddress: '...' });
+      await this.checkWeb3();
     });
 
-    this.maker.on("web3/DISCONNECTED", () => {
-      this.setState({ web3Status: Web3States.NoWeb3 });
-      return this.checkWeb3();
+    this.maker.on("web3/DISCONNECTED", async () => {
+      await this.setState({ web3Status: Web3States.NoWeb3 });
+      await this.checkWeb3();
     });
   };
 
@@ -296,8 +297,28 @@ class DApp extends Component {
             <h4>This is a demo DApp. Data is faked, formulas are real.</h4>
           </Header>
           <Main>
-            {web3Status === Web3States.NoWeb3 && <NoWeb3Screen />}
-            {web3Status === Web3States.NoAccount && <NoAccountScreen />}
+            {web3Status === Web3States.NoWeb3 && (
+              <Web3ScreenStyled>
+                <h2>No Web3 Available</h2>
+                <p>You need a wallet manager in order to use OpenCDP.</p>
+                <p>
+                  Most popular option is Metamask:{" "}
+                  <a href="https://metamask.io/" target="_blank" rel="noopener noreferrer">
+                    https://metamask.io/
+                  </a>
+                </p>
+                <p>Once installed, please reload the page.</p>
+              </Web3ScreenStyled>
+            )}
+            {web3Status === Web3States.NoAccount && (
+              <Web3ScreenStyled>
+                <h2>No Web3 Account Selected</h2>
+                <p>
+                  Please login with your preferred wallet manager and choose the address you want to use OpenCDP
+                  with.
+                </p>
+              </Web3ScreenStyled>
+            )}
             {web3Status === Web3States.OK && (
               <React.Fragment>
                 <Section>
