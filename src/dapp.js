@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import { ThemeProvider } from "styled-components";
 import { CSSTransitionGroup } from "react-transition-group";
+import Maker from "@makerdao/dai";
 
-// using ./utils/check-web3 till maker package works
-// import web3Checker from "./utils/check-web3";
+import web3Checker, { Web3States } from "./utils/check-web3";
 import theme from "./utils/theme";
 import formatNumber from "./utils/format-number";
 import {
@@ -31,16 +31,16 @@ import {
   Dialog,
   CancelDialogButton,
   AcceptDialogButton,
-  HelpPopup
+  HelpPopup,
+  Web3ScreenStyled
 } from "./components/Styled";
-import { NoWeb3Screen, NoAccountScreen } from "./components/WalletCheckScreens";
 
 class DApp extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      web3Status: "ok",
+      web3Status: Web3States.NoWeb3,
       ...this.emptyInitialState(),
       ...this.mockedStateValues()
     };
@@ -48,6 +48,8 @@ class DApp extends Component {
     this.state.liquidationPrice = this.getLiquidationPrice();
 
     this.wizardEthRef = React.createRef();
+
+    this.maker = Maker.create("test");
   }
 
   emptyInitialState = () => ({
@@ -85,7 +87,7 @@ class DApp extends Component {
     totalDaiSupply: 2129501294,
     totalEthLockedUp: 4919825,
     // wallet
-    walletAddress: "0x0000000000000000000000000000000000000000",
+    walletAddress: "...",
     walletDai: 234,
     walletEth: 0.7132,
     walletCdps: this.getWalletCdps(),
@@ -101,7 +103,37 @@ class DApp extends Component {
 
   componentDidMount() {
     // web3Checker().then(web3Status => this.setState({ web3Status }));
+    this.checkWeb3().then(() => {
+      this.makerAttachEvents();
+    });
   }
+
+  checkWeb3 = async () => {
+    const web3Status = await web3Checker();
+    this.setState({ web3Status });
+  };
+
+  makerAttachEvents = () => {
+    const { Web3States } = this;
+
+    this.maker.on("web3/AUTHENTICATED", async eventObj => {
+      const { account } = eventObj.payload;
+      await this.setState({
+        walletAddress: account
+      });
+      await this.checkWeb3();
+    });
+
+    this.maker.on("web3/DEAUTHENTICATED", async () => {
+      await this.setState({ walletAddress: '...' });
+      await this.checkWeb3();
+    });
+
+    this.maker.on("web3/DISCONNECTED", async () => {
+      await this.setState({ web3Status: Web3States.NoWeb3 });
+      await this.checkWeb3();
+    });
+  };
 
   handleWizardChange = name => async eventOrNode => {
     const { value } = eventOrNode.target || eventOrNode;
@@ -250,6 +282,7 @@ class DApp extends Component {
       showComingSoonModal,
       showHelp
     } = this.state;
+
     const ethInUsd = walletEth * ethPrice;
     const wizEthInUsd = eth * ethPrice;
     const createCdpDisabled = !(eth || dai) || eth > walletEth;
@@ -264,9 +297,30 @@ class DApp extends Component {
             <h4>This is a demo DApp. Data is faked, formulas are real.</h4>
           </Header>
           <Main>
-            {web3Status === "noWeb3" && <NoWeb3Screen />}
-            {web3Status === "noAccount" && <NoAccountScreen />}
-            {web3Status === "ok" && (
+            {web3Status === Web3States.NoWeb3 && (
+              <Web3ScreenStyled>
+                <h2>No Web3 Available</h2>
+                <p>You need a wallet manager in order to use OpenCDP.</p>
+                <p>
+                  Most popular option is Metamask:{" "}
+                  <a href="https://metamask.io/" target="_blank" rel="noopener noreferrer">
+                    https://metamask.io/
+                  </a>
+                </p>
+                <p>Once installed, please reload the page.</p>
+              </Web3ScreenStyled>
+            )}
+            {web3Status === Web3States.NoAccount && (
+              <Web3ScreenStyled>
+                <h2>No Web3 Account Selected</h2>
+                <p>
+                  Please login with your preferred wallet manager and choose the address you want to use OpenCDP
+                  with.
+                </p>
+                <p>Once logged in, please reload the page.</p>
+              </Web3ScreenStyled>
+            )}
+            {web3Status === Web3States.OK && (
               <React.Fragment>
                 <Section>
                   <h2>My Wallet</h2>
@@ -625,7 +679,11 @@ class DApp extends Component {
                     <Dialog>
                       <h3>Coming Soon!</h3>
                       <p>This feature will be available in future releases.</p>
-                      <img className="coming-soon" src="/images/coming-soon.svg" alt="Coming Soon" />
+                      <img
+                        className="coming-soon"
+                        src="/images/coming-soon.svg"
+                        alt="Coming Soon"
+                      />
                       <div className="buttons">
                         <CancelDialogButton onClick={() => this.toggleComingSoonModal()}>
                           Close

@@ -607,6 +607,29 @@ export const CancelDialogButton = styled(DialogButton)`
   background-color: ${({ theme }) => theme.color.softGray};
 `;
 
+export const Web3ScreenStyled = styled.div`
+  max-width: 30rem;
+  padding: 1rem 3rem;
+  margin: auto;
+
+  text-align: center;
+  color: white;
+
+  background-color: ${({ theme }) => theme.color.main};
+  border: 2px solid ${({ theme }) => theme.color.main};
+  border-radius: ${({ theme }) => theme.border.radius};
+
+  p {
+    line-height: 1.5rem;
+    font-weight: 500;
+  }
+
+  a,
+  &:visited {
+    color: ${({ theme }) => theme.color.sectionTag};
+  }
+`;
+
 export const Slider = styled.input.attrs({
   type: "range"
 })`
