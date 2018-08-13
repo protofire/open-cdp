@@ -49,10 +49,32 @@ class DApp extends Component {
 
     this.wizardEthRef = React.createRef();
 
-    this.maker = Maker.create("test");
+    this.checkWeb3().then(() => {
+      const makerArgs = [];
+
+      switch (this.state.networkId) {
+        case 1:
+          makerArgs.push("mainnet");
+          break;
+        case 42:
+          makerArgs.push("kovan", { privateKey: "YOUR_PRIVATE_KEY" });
+          break;
+        case 5777:
+          makerArgs.push("test");
+          break;
+        default:
+          break;
+      }
+
+      if (makerArgs.length) {
+        this.maker = Maker.create(...makerArgs);
+        this.makerAttachEvents();
+      }
+    });
   }
 
   emptyInitialState = () => ({
+    networkId: -1,
     ethPrice: -1,
     // maker
     daiPrice: -1,
@@ -101,16 +123,12 @@ class DApp extends Component {
     currentTx: "0x0000000000000000000000000000000000000000000000000000000000000000"
   });
 
-  componentDidMount() {
-    // web3Checker().then(web3Status => this.setState({ web3Status }));
-    this.checkWeb3().then(() => {
-      this.makerAttachEvents();
-    });
-  }
-
   checkWeb3 = async () => {
-    const web3Status = await web3Checker();
+    const { res: web3Status, networkId } = await web3Checker();
     this.setState({ web3Status });
+    if (networkId) {
+      this.setState({ networkId });
+    }
   };
 
   makerAttachEvents = () => {
@@ -125,7 +143,7 @@ class DApp extends Component {
     });
 
     this.maker.on("web3/DEAUTHENTICATED", async () => {
-      await this.setState({ walletAddress: '...' });
+      await this.setState({ walletAddress: "..." });
       await this.checkWeb3();
     });
 
@@ -241,6 +259,23 @@ class DApp extends Component {
 
   showHelp = showHelp => this.setState({ showHelp });
 
+  getNetworkName = networkId => {
+    switch (Number(networkId)) {
+      case 1:
+        return "MainNet";
+      case 3:
+        return "Ropsten";
+      case 4:
+        return "Rinkeby";
+      case 42:
+        return "Kovan";
+      case 5777:
+        return "TestNet";
+      default:
+        return "Unknown Network";
+    }
+  };
+
   setMaxEth = () =>
     this.setState({ eth: this.state.walletEth }, () =>
       this.handleWizardChange("eth")(this.wizardEthRef)
@@ -260,6 +295,7 @@ class DApp extends Component {
     const {
       web3Status,
       walletCdps,
+      networkId,
       ethPrice,
       daiPrice,
       totalCdps,
@@ -287,6 +323,7 @@ class DApp extends Component {
     const wizEthInUsd = eth * ethPrice;
     const createCdpDisabled = !(eth || dai) || eth > walletEth;
     const noEnoughEth = eth > walletEth;
+    const allowedNetwork = [1, 42, 5777].includes(networkId);
     const LS = "...";
 
     return (
@@ -314,386 +351,406 @@ class DApp extends Component {
               <Web3ScreenStyled>
                 <h2>No Web3 Account Selected</h2>
                 <p>
-                  Please login with your preferred wallet manager and choose the address you want to use OpenCDP
-                  with.
+                  Please login with your preferred wallet manager and choose the address you want to
+                  use OpenCDP with.
                 </p>
                 <p>Once logged in, please reload the page.</p>
               </Web3ScreenStyled>
             )}
-            {web3Status === Web3States.OK && (
-              <React.Fragment>
-                <Section>
-                  <h2>My Wallet</h2>
-                  <Address>Your address: {walletAddress || "-"}</Address>
-                  <Block>
-                    <TokenIconWrapper>
-                      {walletDai > -1 ? formatNumber(walletDai) : LS} DAI <IconDAI />
-                    </TokenIconWrapper>
-                    <TokenIconWrapper>
-                      {walletEth > -1 ? formatNumber(walletEth) : LS} ETH <IconETH />{" "}
-                      <i className="eth-in-usd">({formatNumber(ethInUsd, 2, 2)} U$D)</i>
-                    </TokenIconWrapper>
-                  </Block>
-                </Section>
+            {web3Status === Web3States.OK &&
+              !allowedNetwork && (
+                <Web3ScreenStyled>
+                  <h2>Network not allowed</h2>
+                  <p>
+                    You are currently on {this.getNetworkName(networkId)} (ID {networkId})
+                  </p>
+                  <p>
+                    At the moment you can use GetDAI on MainNet, Kovan and a local node (Ganache on
+                    http://127.0.0.1:2000 with network id 5777)
+                  </p>
+                  <p>Please change the network and try again.</p>
+                </Web3ScreenStyled>
+              )}
+            {web3Status === Web3States.OK &&
+              allowedNetwork && (
+                <React.Fragment>
+                  <Section>
+                    <h2>My Wallet</h2>
+                    <Address>Your address: {walletAddress || "-"}</Address>
+                    <Block>
+                      <TokenIconWrapper>
+                        {walletDai > -1 ? formatNumber(walletDai) : LS} DAI <IconDAI />
+                      </TokenIconWrapper>
+                      <TokenIconWrapper>
+                        {walletEth > -1 ? formatNumber(walletEth) : LS} ETH <IconETH />{" "}
+                        <i className="eth-in-usd">({formatNumber(ethInUsd, 2, 2)} U$D)</i>
+                      </TokenIconWrapper>
+                    </Block>
+                  </Section>
 
-                <Section>
-                  <h2>New CDP</h2>
-                  <Block>
-                    <label htmlFor="eth">
-                      <div>
-                        <span>ETH to lock up</span>
-                        <HelpIcon
-                          onMouseMove={() => this.showHelp("ethToLockUp")}
-                          onMouseOut={() => this.showHelp("")}
-                        >
-                          ?
-                        </HelpIcon>
-                        {showHelp === "ethToLockUp" && (
-                          <HelpPopup>
-                            <p>
-                              This is the amount of ETH you should lock up in order to borrow DAIs.
-                            </p>
-                          </HelpPopup>
-                        )}
-                        <SetMaxEth onClick={() => this.setMaxEth()}>set max</SetMaxEth>
-                      </div>
-                      <div>
-                        <WizardNumberInput
-                          name="Eth"
-                          value={eth}
-                          placeholder="0.00"
-                          step={0.0001}
-                          min={0.01}
-                          className={noEnoughEth ? "redText" : ""}
-                          onChange={this.handleWizardChange("eth")}
-                          innerRef={el => {
-                            this.wizardEthRef = el;
-                          }}
-                        />
-                        <span>ETH</span>
-                      </div>
-                      <div>
-                        <span>min 0.01 ETH</span>
-                        <span>{formatNumber(wizEthInUsd, 2, 2)} U$D</span>
-                      </div>
-                    </label>
-
-                    <label htmlFor="dai">
-                      <div>
-                        <span>DAI to get</span>
-                        <HelpIcon
-                          onMouseMove={() => this.showHelp("daiToGet")}
-                          onMouseOut={() => this.showHelp("")}
-                        >
-                          ?
-                        </HelpIcon>
-                        {showHelp === "daiToGet" && (
-                          <HelpPopup>
-                            <p>
-                              This is the total DAIs you can get by creating a new CDP with current
-                              settings.
-                            </p>
-                          </HelpPopup>
-                        )}
-                      </div>
-                      <div>
-                        <WizardNumberInput
-                          name="Dai"
-                          value={dai}
-                          placeholder="0.00"
-                          step={0.01}
-                          onChange={this.handleWizardChange("dai")}
-                        />
-                        <span>DAI</span>
-                      </div>
-                    </label>
-                  </Block>
-
-                  <CSSTransitionGroup
-                    transitionName="advanced-options"
-                    transitionEnterTimeout={300}
-                    transitionLeaveTimeout={300}
-                  >
-                    {showAdvanced && (
-                      <Block>
+                  <Section>
+                    <h2>New CDP</h2>
+                    <Block>
+                      <label htmlFor="eth">
                         <div>
-                          <label htmlFor="safety">
-                            <div>
-                              <span>Safety</span>
-                              <HelpIcon
-                                onMouseMove={() => this.showHelp("safety")}
-                                onMouseOut={() => this.showHelp("")}
-                              >
-                                ?
-                              </HelpIcon>
-                              {showHelp === "safety" && (
-                                <HelpPopup>
-                                  <p>% ETH needs to fall by to be liquidated.</p>
-                                </HelpPopup>
-                              )}
-                              <span className="safety-percent">
-                                {safety > -1 ? safety : 50}
-                                <i>%</i>
-                              </span>
-                            </div>
-                            <Slider
-                              name="Safety"
-                              value={safety > -1 ? safety : 50}
-                              onChange={this.handleWizardChange("safety")}
-                              min="0"
-                              max="100"
-                              step={1}
-                            />
-                            <div className="safety-points">
-                              <span>Low</span>
-                              <span>Mid</span>
-                              <span>High</span>
-                            </div>
-                          </label>
+                          <span>ETH to lock up</span>
+                          <HelpIcon
+                            onMouseMove={() => this.showHelp("ethToLockUp")}
+                            onMouseOut={() => this.showHelp("")}
+                          >
+                            ?
+                          </HelpIcon>
+                          {showHelp === "ethToLockUp" && (
+                            <HelpPopup>
+                              <p>
+                                This is the amount of ETH you should lock up in order to borrow
+                                DAIs.
+                              </p>
+                            </HelpPopup>
+                          )}
+                          <SetMaxEth onClick={() => this.setMaxEth()}>set max</SetMaxEth>
                         </div>
                         <div>
-                          <label htmlFor="leverage">
-                            <div>
-                              <span>Leverage</span>
-                              <HelpIcon
-                                onMouseMove={() => this.showHelp("leverage")}
-                                onMouseOut={() => this.showHelp("")}
-                              >
-                                ?
-                              </HelpIcon>
-                              {showHelp === "leverage" && (
-                                <HelpPopup>
-                                  <p>
-                                    CDP ratio between ETH and DAI. Another way of manage safety.
-                                  </p>
-                                </HelpPopup>
-                              )}
-                            </div>
-                            <div>
-                              <WizardNumberInput
-                                name="Leverage"
-                                value={leverage > -1 ? leverage : ""}
-                                placeholder="-"
-                                min={1}
-                                max={5 / 3}
-                                step={0.001}
-                                onChange={this.handleWizardChange("leverage")}
-                              />
-                              <span>X</span>
-                            </div>
-                          </label>
+                          <WizardNumberInput
+                            name="Eth"
+                            value={eth}
+                            placeholder="0.00"
+                            step={0.0001}
+                            min={0.01}
+                            className={noEnoughEth ? "redText" : ""}
+                            onChange={this.handleWizardChange("eth")}
+                            innerRef={el => {
+                              this.wizardEthRef = el;
+                            }}
+                          />
+                          <span>ETH</span>
                         </div>
-                      </Block>
-                    )}
-                  </CSSTransitionGroup>
+                        <div>
+                          <span>min 0.01 ETH</span>
+                          <span>{formatNumber(wizEthInUsd, 2, 2)} U$D</span>
+                        </div>
+                      </label>
 
-                  <Block>
-                    <p className="textual">
-                      CDP liquidation would start if ETH goes below{" "}
-                      <span>U$D {liquidationPrice > -1 ? liquidationPrice : LS}</span> (-{safety >
-                      -1
-                        ? safety
-                        : LS}%). You can borrow up to <span>{dai || LS}</span> DAI
-                    </p>
-                  </Block>
+                      <label htmlFor="dai">
+                        <div>
+                          <span>DAI to get</span>
+                          <HelpIcon
+                            onMouseMove={() => this.showHelp("daiToGet")}
+                            onMouseOut={() => this.showHelp("")}
+                          >
+                            ?
+                          </HelpIcon>
+                          {showHelp === "daiToGet" && (
+                            <HelpPopup>
+                              <p>
+                                This is the total DAIs you can get by creating a new CDP with
+                                current settings.
+                              </p>
+                            </HelpPopup>
+                          )}
+                        </div>
+                        <div>
+                          <WizardNumberInput
+                            name="Dai"
+                            value={dai}
+                            placeholder="0.00"
+                            step={0.01}
+                            onChange={this.handleWizardChange("dai")}
+                          />
+                          <span>DAI</span>
+                        </div>
+                      </label>
+                    </Block>
 
-                  <Block>
-                    <Button
-                      type="button"
-                      disabled={createCdpDisabled}
-                      onClick={() => this.createCdp()}
+                    <CSSTransitionGroup
+                      transitionName="advanced-options"
+                      transitionEnterTimeout={300}
+                      transitionLeaveTimeout={300}
                     >
-                      Create CDP
-                    </Button>
-                    <ToggleOptions onClick={() => this.toggleOptions()}>
-                      {showAdvanced ? "▲ Basic" : "▼ Advanced"}
-                    </ToggleOptions>
-                  </Block>
-                </Section>
+                      {showAdvanced && (
+                        <Block>
+                          <div>
+                            <label htmlFor="safety">
+                              <div>
+                                <span>Safety</span>
+                                <HelpIcon
+                                  onMouseMove={() => this.showHelp("safety")}
+                                  onMouseOut={() => this.showHelp("")}
+                                >
+                                  ?
+                                </HelpIcon>
+                                {showHelp === "safety" && (
+                                  <HelpPopup>
+                                    <p>% ETH needs to fall by to be liquidated.</p>
+                                  </HelpPopup>
+                                )}
+                                <span className="safety-percent">
+                                  {safety > -1 ? safety : 50}
+                                  <i>%</i>
+                                </span>
+                              </div>
+                              <Slider
+                                name="Safety"
+                                value={safety > -1 ? safety : 50}
+                                onChange={this.handleWizardChange("safety")}
+                                min="0"
+                                max="100"
+                                step={1}
+                              />
+                              <div className="safety-points">
+                                <span>Low</span>
+                                <span>Mid</span>
+                                <span>High</span>
+                              </div>
+                            </label>
+                          </div>
+                          <div>
+                            <label htmlFor="leverage">
+                              <div>
+                                <span>Leverage</span>
+                                <HelpIcon
+                                  onMouseMove={() => this.showHelp("leverage")}
+                                  onMouseOut={() => this.showHelp("")}
+                                >
+                                  ?
+                                </HelpIcon>
+                                {showHelp === "leverage" && (
+                                  <HelpPopup>
+                                    <p>
+                                      CDP ratio between ETH and DAI. Another way of manage safety.
+                                    </p>
+                                  </HelpPopup>
+                                )}
+                              </div>
+                              <div>
+                                <WizardNumberInput
+                                  name="Leverage"
+                                  value={leverage > -1 ? leverage : ""}
+                                  placeholder="-"
+                                  min={1}
+                                  max={5 / 3}
+                                  step={0.001}
+                                  onChange={this.handleWizardChange("leverage")}
+                                />
+                                <span>X</span>
+                              </div>
+                            </label>
+                          </div>
+                        </Block>
+                      )}
+                    </CSSTransitionGroup>
 
-                <Section>
-                  <h2>My CDPs</h2>
-                  <Block>
-                    {!walletCdps && <span className="no-cdps-found">No CDPs found</span>}
-                    {walletCdps && (
-                      <WalletCdpsTable>
-                        <thead>
-                          <tr>
-                            <th>CDP ID</th>
-                            <th>Borrowed DAI</th>
-                            <th>Locked ETH</th>
-                            <th>Liquidation Price</th>
-                            <th>Manage</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {walletCdps.map(cdp => {
-                            const disabled = cdp.id % 3;
-                            return (
-                              <tr key={cdp.id}>
-                                <td>{cdp.id}</td>
-                                <td>{formatNumber(cdp.borrowedDai, 3, 3)}</td>
-                                <td>{formatNumber(cdp.lockedEth, 3, 3)}</td>
-                                <td>
-                                  <DollarSign /> {formatNumber(cdp.liquidationPrice, 3, 3)}
-                                </td>
-                                <td>
-                                  <button onClick={() => this.toggleComingSoonModal()}>
-                                    Repay
-                                  </button>
-                                  <button
-                                    onClick={() => this.toggleComingSoonModal()}
-                                    disabled={disabled}
-                                  >
-                                    Free
-                                  </button>
-                                  <button
-                                    onClick={() => this.toggleComingSoonModal()}
-                                    disabled={disabled}
-                                  >
-                                    Draw
-                                  </button>
-                                  <button
-                                    onClick={() => this.toggleComingSoonModal()}
-                                    disabled={disabled}
-                                  >
-                                    Wipe
-                                  </button>
-                                  <button onClick={() => this.toggleComingSoonModal()}>Shut</button>
-                                  <button onClick={() => this.toggleComingSoonModal()}>Give</button>
-                                  <button
-                                    onClick={() => this.toggleComingSoonModal()}
-                                    disabled={disabled}
-                                  >
-                                    Bite
-                                  </button>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </WalletCdpsTable>
-                    )}
-                  </Block>
-                </Section>
-
-                <Section className="general-info">
-                  <div>
-                    <span>
-                      <DollarSign /> {ethPrice > -1 ? formatNumber(ethPrice) : LS}
-                    </span>
-                    <span>ETH price</span>
-                  </div>
-                  <div>
-                    <span>
-                      <DollarSign /> {daiPrice > -1 ? formatNumber(daiPrice) : LS}
-                    </span>
-                    <span>DAI price</span>
-                  </div>
-                  <div>
-                    <span>{totalCdps > -1 ? formatNumber(totalCdps, 0) : LS}</span>
-                    <span>Total CDPs</span>
-                  </div>
-                  <div>
-                    <TokenIconWrapper>
-                      <IconDAI /> {totalDaiSupply > -1 ? formatNumber(totalDaiSupply, 3, 3) : LS}
-                    </TokenIconWrapper>
-                    <span>Total DAI supply</span>
-                  </div>
-                  <div>
-                    <TokenIconWrapper>
-                      <IconETH />{" "}
-                      {totalEthLockedUp > -1 ? formatNumber(totalEthLockedUp, 3, 3) : LS}
-                    </TokenIconWrapper>
-                    <span>Total ETH locked up</span>
-                  </div>
-                </Section>
-
-                {showDialogTx && (
-                  <Modal>
-                    <Dialog>
-                      <h3>Confirm CDP creation?</h3>
-                      <p>
-                        You are going to lock up <span>{eth} ETH</span> and receive{" "}
-                        <span>{dai} DAI</span>.
+                    <Block>
+                      <p className="textual">
+                        CDP liquidation would start if ETH goes below{" "}
+                        <span>U$D {liquidationPrice > -1 ? liquidationPrice : LS}</span> (-{safety >
+                        -1
+                          ? safety
+                          : LS}%). You can borrow up to <span>{dai || LS}</span> DAI
                       </p>
-                      <p>Are you sure you want to proceed with this transaction?</p>
-                      <div className="buttons">
-                        <CancelDialogButton onClick={() => this.toggleDialog()}>
-                          Cancel
-                        </CancelDialogButton>
-                        <AcceptDialogButton onClick={() => this.confirmTx()}>
-                          Accept
-                        </AcceptDialogButton>
-                      </div>
-                    </Dialog>
-                  </Modal>
-                )}
+                    </Block>
 
-                {showWaitingAction && (
-                  <Modal>
-                    <Dialog>
-                      <h3>Waiting...</h3>
-                      <p>Please accept pending transaction on your wallet.</p>
-                      <img src="/images/waiting-coin.svg" alt="Waiting" />
-                    </Dialog>
-                  </Modal>
-                )}
+                    <Block>
+                      <Button
+                        type="button"
+                        disabled={createCdpDisabled}
+                        onClick={() => this.createCdp()}
+                      >
+                        Create CDP
+                      </Button>
+                      <ToggleOptions onClick={() => this.toggleOptions()}>
+                        {showAdvanced ? "▲ Basic" : "▼ Advanced"}
+                      </ToggleOptions>
+                    </Block>
+                  </Section>
 
-                {showMiningNotice && (
-                  <Modal>
-                    <Dialog>
-                      <h3>Creating CDP!</h3>
-                      <p>Your CDP creation transaction is in progress on the blockchain.</p>
-                      <p>You can track it with its hash: </p>
-                      <p>
-                        <a
-                          href={`https://etherscan.io/tx/${currentTx}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title="View TX on etherscan.io"
-                          className="tx-etherscan"
-                        >
-                          {currentTx}
-                        </a>
-                      </p>
-                      <p>Please be patient till it finishes, shouldn't take too long.</p>
-                      <img src="/images/working-gears.svg" alt="Mining" />
-                    </Dialog>
-                  </Modal>
-                )}
+                  <Section>
+                    <h2>My CDPs</h2>
+                    <Block>
+                      {!walletCdps && <span className="no-cdps-found">No CDPs found</span>}
+                      {walletCdps && (
+                        <WalletCdpsTable>
+                          <thead>
+                            <tr>
+                              <th>CDP ID</th>
+                              <th>Borrowed DAI</th>
+                              <th>Locked ETH</th>
+                              <th>Liquidation Price</th>
+                              <th>Manage</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {walletCdps.map(cdp => {
+                              const disabled = cdp.id % 3;
+                              return (
+                                <tr key={cdp.id}>
+                                  <td>{cdp.id}</td>
+                                  <td>{formatNumber(cdp.borrowedDai, 3, 3)}</td>
+                                  <td>{formatNumber(cdp.lockedEth, 3, 3)}</td>
+                                  <td>
+                                    <DollarSign /> {formatNumber(cdp.liquidationPrice, 3, 3)}
+                                  </td>
+                                  <td>
+                                    <button onClick={() => this.toggleComingSoonModal()}>
+                                      Repay
+                                    </button>
+                                    <button
+                                      onClick={() => this.toggleComingSoonModal()}
+                                      disabled={disabled}
+                                    >
+                                      Free
+                                    </button>
+                                    <button
+                                      onClick={() => this.toggleComingSoonModal()}
+                                      disabled={disabled}
+                                    >
+                                      Draw
+                                    </button>
+                                    <button
+                                      onClick={() => this.toggleComingSoonModal()}
+                                      disabled={disabled}
+                                    >
+                                      Wipe
+                                    </button>
+                                    <button onClick={() => this.toggleComingSoonModal()}>
+                                      Shut
+                                    </button>
+                                    <button onClick={() => this.toggleComingSoonModal()}>
+                                      Give
+                                    </button>
+                                    <button
+                                      onClick={() => this.toggleComingSoonModal()}
+                                      disabled={disabled}
+                                    >
+                                      Bite
+                                    </button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </WalletCdpsTable>
+                      )}
+                    </Block>
+                  </Section>
 
-                {loadingData && (
-                  <Modal>
-                    <Dialog>
-                      <h3>Loading...</h3>
-                      <p>Your new CDP has been created!</p>
-                      <p>Now please wait while new data is being loaded.</p>
-                      <img src="/images/loading-coffee.svg" alt="Loading" />
-                    </Dialog>
-                  </Modal>
-                )}
+                  <Section className="general-info">
+                    <div>
+                      <span>
+                        <DollarSign /> {ethPrice > -1 ? formatNumber(ethPrice) : LS}
+                      </span>
+                      <span>ETH price</span>
+                    </div>
+                    <div>
+                      <span>
+                        <DollarSign /> {daiPrice > -1 ? formatNumber(daiPrice) : LS}
+                      </span>
+                      <span>DAI price</span>
+                    </div>
+                    <div>
+                      <span>{totalCdps > -1 ? formatNumber(totalCdps, 0) : LS}</span>
+                      <span>Total CDPs</span>
+                    </div>
+                    <div>
+                      <TokenIconWrapper>
+                        <IconDAI /> {totalDaiSupply > -1 ? formatNumber(totalDaiSupply, 3, 3) : LS}
+                      </TokenIconWrapper>
+                      <span>Total DAI supply</span>
+                    </div>
+                    <div>
+                      <TokenIconWrapper>
+                        <IconETH />{" "}
+                        {totalEthLockedUp > -1 ? formatNumber(totalEthLockedUp, 3, 3) : LS}
+                      </TokenIconWrapper>
+                      <span>Total ETH locked up</span>
+                    </div>
+                  </Section>
 
-                {showComingSoonModal && (
-                  <Modal>
-                    <Dialog>
-                      <h3>Coming Soon!</h3>
-                      <p>This feature will be available in future releases.</p>
-                      <img
-                        className="coming-soon"
-                        src="/images/coming-soon.svg"
-                        alt="Coming Soon"
-                      />
-                      <div className="buttons">
-                        <CancelDialogButton onClick={() => this.toggleComingSoonModal()}>
-                          Close
-                        </CancelDialogButton>
-                      </div>
-                    </Dialog>
-                  </Modal>
-                )}
-              </React.Fragment>
-            )}
+                  {showDialogTx && (
+                    <Modal>
+                      <Dialog>
+                        <h3>Confirm CDP creation?</h3>
+                        <p>
+                          You are going to lock up <span>{eth} ETH</span> and receive{" "}
+                          <span>{dai} DAI</span>.
+                        </p>
+                        <p>Are you sure you want to proceed with this transaction?</p>
+                        <div className="buttons">
+                          <CancelDialogButton onClick={() => this.toggleDialog()}>
+                            Cancel
+                          </CancelDialogButton>
+                          <AcceptDialogButton onClick={() => this.confirmTx()}>
+                            Accept
+                          </AcceptDialogButton>
+                        </div>
+                      </Dialog>
+                    </Modal>
+                  )}
+
+                  {showWaitingAction && (
+                    <Modal>
+                      <Dialog>
+                        <h3>Waiting...</h3>
+                        <p>Please accept pending transaction on your wallet.</p>
+                        <img src="/images/waiting-coin.svg" alt="Waiting" />
+                      </Dialog>
+                    </Modal>
+                  )}
+
+                  {showMiningNotice && (
+                    <Modal>
+                      <Dialog>
+                        <h3>Creating CDP!</h3>
+                        <p>Your CDP creation transaction is in progress on the blockchain.</p>
+                        <p>You can track it with its hash: </p>
+                        <p>
+                          <a
+                            href={`https://etherscan.io/tx/${currentTx}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="View TX on etherscan.io"
+                            className="tx-etherscan"
+                          >
+                            {currentTx}
+                          </a>
+                        </p>
+                        <p>Please be patient till it finishes, shouldn't take too long.</p>
+                        <img src="/images/working-gears.svg" alt="Mining" />
+                      </Dialog>
+                    </Modal>
+                  )}
+
+                  {loadingData && (
+                    <Modal>
+                      <Dialog>
+                        <h3>Loading...</h3>
+                        <p>Your new CDP has been created!</p>
+                        <p>Now please wait while new data is being loaded.</p>
+                        <img src="/images/loading-coffee.svg" alt="Loading" />
+                      </Dialog>
+                    </Modal>
+                  )}
+
+                  {showComingSoonModal && (
+                    <Modal>
+                      <Dialog>
+                        <h3>Coming Soon!</h3>
+                        <p>This feature will be available in future releases.</p>
+                        <img
+                          className="coming-soon"
+                          src="/images/coming-soon.svg"
+                          alt="Coming Soon"
+                        />
+                        <div className="buttons">
+                          <CancelDialogButton onClick={() => this.toggleComingSoonModal()}>
+                            Close
+                          </CancelDialogButton>
+                        </div>
+                      </Dialog>
+                    </Modal>
+                  )}
+                </React.Fragment>
+              )}
           </Main>
 
           <Footer>
