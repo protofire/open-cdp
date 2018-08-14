@@ -42,9 +42,12 @@ export const Header = styled.header`
   justify-content: flex-end;
   align-items: center;
 
+  position: relative;
   padding: 0;
   min-height: 4.5rem;
   max-height: 4.5rem;
+  min-width: 63rem;
+  max-width: 63rem;
   text-align: center;
 
   h1 {
@@ -63,6 +66,15 @@ export const Header = styled.header`
     color: ${({ theme }) => theme.color.sectionTag};
     background-color: ${({ theme }) => theme.color.demoBg};
   }
+`;
+
+export const MetaMask = styled.img.attrs({
+  src: "/images/metamask.png",
+  alt: "MetaMask"
+})`
+  max-height: 1.2rem;
+  vertical-align: text-bottom;
+  margin: 0 0.4rem 0.1rem 0;
 `;
 
 export const Main = styled.main`
@@ -209,6 +221,14 @@ export const Section = styled.section`
   .advanced-options-leave.advanced-options-leave-active {
     opacity: 0.01;
     transition: opacity 300ms ease-in;
+  }
+
+  .connect-button {
+    position: absolute;
+    right: 0;
+    top: -2.3rem;
+    font-size: 1.2rem;
+    padding: 0.1rem 0.5rem 0.2rem;
   }
 `;
 

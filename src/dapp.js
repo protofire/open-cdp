@@ -31,7 +31,8 @@ import {
   Dialog,
   CancelDialogButton,
   AcceptDialogButton,
-  HelpPopup
+  HelpPopup,
+  MetaMask
 } from "./components/Styled";
 import { NoWeb3Screen, NoAccountScreen } from "./components/WalletCheckScreens";
 
@@ -261,7 +262,10 @@ class DApp extends Component {
         <Layout>
           <Header>
             <h1>Borrow money using cryptocurrency as collateral</h1>
-            <h4>This is a demo DApp. Data is faked, formulas are real.</h4>
+            <h4>
+              This is a demo DApp. Data is faked, formulas are real. Using @makerdao/dai v0.5.8
+              library.
+            </h4>
           </Header>
           <Main>
             {web3Status === "noWeb3" && <NoWeb3Screen />}
@@ -270,6 +274,13 @@ class DApp extends Component {
               <React.Fragment>
                 <Section>
                   <h2>My Wallet</h2>
+                  <AcceptDialogButton
+                    className="connect-button"
+                    onClick={() => this.toggleComingSoonModal()}
+                  >
+                    <MetaMask/>
+                    Connect
+                  </AcceptDialogButton>
                   <Address>Your address: {walletAddress || "-"}</Address>
                   <Block>
                     <TokenIconWrapper>
@@ -625,7 +636,11 @@ class DApp extends Component {
                     <Dialog>
                       <h3>Coming Soon!</h3>
                       <p>This feature will be available in future releases.</p>
-                      <img className="coming-soon" src="/images/coming-soon.svg" alt="Coming Soon" />
+                      <img
+                        className="coming-soon"
+                        src="/images/coming-soon.svg"
+                        alt="Coming Soon"
+                      />
                       <div className="buttons">
                         <CancelDialogButton onClick={() => this.toggleComingSoonModal()}>
                           Close
