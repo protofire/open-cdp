@@ -3,7 +3,7 @@ import { ThemeProvider } from "styled-components";
 import { CSSTransitionGroup } from "react-transition-group";
 import Maker from "@makerdao/dai";
 
-import web3Checker, { Web3States } from "./utils/check-web3";
+import { web3Checker, web3Balance, Web3States } from "./utils/web3";
 import theme from "./utils/theme";
 import formatNumber from "./utils/format-number";
 import {
@@ -135,11 +135,11 @@ class DApp extends Component {
     const { Web3States } = this;
 
     this.maker.on("web3/AUTHENTICATED", async eventObj => {
-      const { account } = eventObj.payload;
-      await this.setState({
-        walletAddress: account
-      });
+      const { account: walletAddress } = eventObj.payload;
+      await this.setState({ walletAddress });
       await this.checkWeb3();
+      const walletEth = await web3Balance(walletAddress);
+      this.setState({ walletEth });
     });
 
     this.maker.on("web3/DEAUTHENTICATED", async () => {

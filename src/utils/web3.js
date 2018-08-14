@@ -6,7 +6,7 @@ export const Web3States = {
   OK: "Ok"
 };
 
-export default (async function() {
+export const web3Checker = async function() {
   if (!window.web3 || !window.web3.eth) {
     return { res: Web3States.NoWeb3 };
   }
@@ -20,4 +20,9 @@ export default (async function() {
   const networkId = await web3.eth.net.getId();
 
   return { res: Web3States.OK, networkId };
-});
+};
+
+export const web3Balance = async function(walletAddress) {
+  const web3 = new Web3(window.web3.currentProvider);
+  return web3.eth.getBalance(walletAddress);
+};
